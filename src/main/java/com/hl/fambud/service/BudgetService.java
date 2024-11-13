@@ -5,7 +5,6 @@ import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.model.Budget;
 import com.hl.fambud.model.Category;
-import com.hl.fambud.model.Transaction;
 import com.hl.fambud.model.Transactor;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
@@ -66,36 +65,24 @@ public class BudgetService {
                 Mono<List<Transactor>> savedTransactorsMono =
                     transactorRepository.saveAll(budget.getTransactors()).collectList();
                 // Save transactions for each transactor after saving transactors
-                Mono<List<Transaction>> savedTransactionsMono = savedTransactorsMono
+                Mono<Void> savedTransactionsMono = savedTransactorsMono
                     .flatMapMany(Flux::fromIterable)
                     .flatMap(transactor -> {
+                        log.debug("ready to set transaction ids for transactor " + transactor);
                         // Set the correct transactorId for each transaction
                         return Flux.fromIterable(transactor.getTransactions())
                             .doOnNext(transaction -> {
+                                log.debug("set transaction transactor id " + transaction);
                                 transaction.setTransactorId(transactor.getTransactorId());
-                                log.debug("Preparing transaction for save: " + transaction);
                             });
                     })
                     .collectList()
                     .flatMapMany(transactionRepository::saveAll)
-                    .collectList();
-                // Combine all saved entities and prepare the final BudgetDto
-                return Mono.zip(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
-                    .flatMap(tuple -> {
-                        List<Category> savedCategories = tuple.getT1();
-                        List<Transactor> savedTransactors = tuple.getT2();
-                        List<Transaction> savedTransactions = tuple.getT3();
+                    .then();
 
-                        log.debug("Categories saved: " + savedCategories.size());
-                        log.debug("Transactors saved: " + savedTransactors.size());
-                        log.debug("Transactions saved: " + savedTransactions.size());
-
-                        savedBudget.setCategories(savedCategories);
-                        savedBudget.setTransactors(savedTransactors);
-
-                        return Mono.just(savedBudget);
-                    })
-                    .map(budgetMapper::toBudgetDto);
+                // Save the categories, transactors, and transactions, then load the complete object graph using getBudget
+                return Mono.when(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
+                    .then(getBudget(savedBudget.getBudgetId()));
             });
     }
 

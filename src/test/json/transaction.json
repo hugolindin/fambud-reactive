@@ -1,0 +1,11 @@
+{
+  "id": 12345,
+  "description": "Sample transaction",
+  "amount": 100.50,
+  "date": "2023-08-28",
+  "type": "EXPENSE",
+  "category": {
+    "id": 45678,
+    "name": "Sample Category"
+  }
+}

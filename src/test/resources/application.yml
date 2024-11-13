@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fambud
+  r2dbc:
+    url: r2dbc:h2:mem:///fambud
+    # url: r2dbc:h2:file:///./db;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    sql:
+      init:
+        mode: always
+        schema-locations: classpath:schema.sql
+    properties:
+      logging.level: DEBUG
+  h2:
+    console:
+      enabled: true
+  data:
+    r2dbc:
+      schema:
+        generate: false
+app:
+  base-url: /api
+
+logging:
+  level:
+    org.springframework: INFO
+    org.springframework.data: INFO
+    org.springframework.r2dbc: INFO
+    com.hl.fambud: DEBUG

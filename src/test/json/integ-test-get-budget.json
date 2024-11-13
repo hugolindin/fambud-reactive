@@ -1,0 +1,74 @@
+{
+  "budgetId" : 1,
+  "name" : "Family Monthly Budget",
+  "categories" : [ {
+    "categoryId" : 1,
+    "budgetId" : 1,
+    "name" : "Groceries"
+  }, {
+    "categoryId" : 2,
+    "budgetId" : 1,
+    "name" : "Utilities"
+  } ],
+  "transactors" : [ {
+    "transactorId" : 1,
+    "budgetId" : 1,
+    "firstName" : "John",
+    "lastName" : "Doe",
+    "email" : "john.doe@example.com",
+    "transactions" : [ {
+      "transactionId" : 1,
+      "transactorId" : 1,
+      "categoryId" : null,
+      "description" : "Supermarket shopping",
+      "amount" : 150.0,
+      "date" : [ 2024, 11, 13 ],
+      "type" : "EXPENSE"
+    }, {
+      "transactionId" : 2,
+      "transactorId" : 1,
+      "categoryId" : null,
+      "description" : "Monthly Electricity Bill",
+      "amount" : 75.0,
+      "date" : [ 2024, 11, 8 ],
+      "type" : "EXPENSE"
+    } ]
+  }, {
+    "transactorId" : 2,
+    "budgetId" : 1,
+    "firstName" : "John",
+    "lastName" : "Doe",
+    "email" : "john.doe@example.com",
+    "transactions" : [ ]
+  }, {
+    "transactorId" : 3,
+    "budgetId" : 1,
+    "firstName" : "Jane",
+    "lastName" : "Smith",
+    "email" : "jane.smith@example.com",
+    "transactions" : [ {
+      "transactionId" : 3,
+      "transactorId" : 3,
+      "categoryId" : null,
+      "description" : "Freelance Income",
+      "amount" : 500.0,
+      "date" : [ 2024, 11, 3 ],
+      "type" : "INCOME"
+    }, {
+      "transactionId" : 4,
+      "transactorId" : 3,
+      "categoryId" : null,
+      "description" : "Internet Bill",
+      "amount" : 50.0,
+      "date" : [ 2024, 11, 11 ],
+      "type" : "EXPENSE"
+    } ]
+  }, {
+    "transactorId" : 4,
+    "budgetId" : 1,
+    "firstName" : "Jane",
+    "lastName" : "Smith",
+    "email" : "jane.smith@example.com",
+    "transactions" : [ ]
+  } ]
+}

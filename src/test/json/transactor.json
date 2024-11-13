@@ -1,0 +1,30 @@
+{
+  "id": 54321,
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "transactions": [
+    {
+      "id": 12345,
+      "description": "Sample transaction 1",
+      "amount": 100.50,
+      "date": "2023-08-28",
+      "type": "EXPENSE",
+      "category": {
+        "id": 45678,
+        "name": "Sample Category"
+      }
+    },
+    {
+      "id": 67890,
+      "description": "Sample transaction 2",
+      "amount": 200.25,
+      "date": "2023-08-29",
+      "type": "INCOME",
+      "category": {
+        "id": 9876,
+        "name": "Another Category"
+      }
+    }
+  ]
+}

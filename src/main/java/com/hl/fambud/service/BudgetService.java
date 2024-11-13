@@ -49,8 +49,12 @@ public class BudgetService {
     private Mono<BudgetDto> saveBudgetAndNestedObjects(Budget budget) {
         return budgetRepository.save(budget)
             .flatMap(savedBudget -> {
+                log.debug("saved budget "+ savedBudget);
                 // Update the budgetId for categories and save them using saveAll
-                budget.getCategories().forEach(category -> category.setBudgetId(savedBudget.getBudgetId()));
+                budget.getCategories().forEach(category -> {
+                    log.debug("set category budget id " + category);
+                    category.setBudgetId(savedBudget.getBudgetId());
+                });
                 Mono<List<Category>> savedCategories = categoryRepository.saveAll(budget.getCategories()).collectList();
 
                 // Update the budgetId for transactors and save them using saveAll
@@ -67,9 +71,9 @@ public class BudgetService {
                         log.debug("update transactions for transactor " + transactor);
                         // Set transactorId for each transaction reactively
                         return Flux.fromIterable(transactor.getTransactions())
-                            .map(transaction -> {
+                            .doOnNext(transaction -> {
+                                log.debug("set transaction transactor id " + transaction);
                                 transaction.setTransactorId(transactor.getTransactorId());
-                                return transaction;
                             });
                     })
                     .collectList() // Collect the transactions with IDs properly set

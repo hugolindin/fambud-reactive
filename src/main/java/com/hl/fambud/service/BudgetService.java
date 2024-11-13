@@ -49,40 +49,52 @@ public class BudgetService {
     private Mono<BudgetDto> saveBudgetAndNestedObjects(Budget budget) {
         return budgetRepository.save(budget)
             .flatMap(savedBudget -> {
-                log.debug("saved budget "+ savedBudget);
-                // Update the budgetId for categories and save them using saveAll
+                log.debug("saved budget " + savedBudget);
+                // Update the budgetId for categories
                 budget.getCategories().forEach(category -> {
                     log.debug("set category budget id " + category);
                     category.setBudgetId(savedBudget.getBudgetId());
                 });
-                Mono<List<Category>> savedCategories = categoryRepository.saveAll(budget.getCategories()).collectList();
-
-                // Update the budgetId for transactors and save them using saveAll
+                // Update the budgetId for transactors
                 budget.getTransactors().forEach(transactor -> {
                     log.debug("set transactor budget id " + transactor);
                     transactor.setBudgetId(savedBudget.getBudgetId());
                 });
-                Mono<List<Transactor>> savedTransactors = transactorRepository.saveAll(budget.getTransactors()).collectList();
-
-                // Save transactions for each transactor without blocking
-                Mono<List<Transaction>> savedTransactions = savedTransactors
-                    .flatMapMany(Flux::fromIterable)  // Convert savedTransactors to a Flux to iterate reactively
+                // save categories and transactors
+                Mono<List<Category>> savedCategoriesMono =
+                    categoryRepository.saveAll(budget.getCategories()).collectList();
+                Mono<List<Transactor>> savedTransactorsMono =
+                    transactorRepository.saveAll(budget.getTransactors()).collectList();
+                // Save transactions for each transactor after saving transactors
+                Mono<List<Transaction>> savedTransactionsMono = savedTransactorsMono
+                    .flatMapMany(Flux::fromIterable)
                     .flatMap(transactor -> {
-                        log.debug("update transactions for transactor " + transactor);
-                        // Set transactorId for each transaction reactively
+                        // Set the correct transactorId for each transaction
                         return Flux.fromIterable(transactor.getTransactions())
                             .doOnNext(transaction -> {
-                                log.debug("set transaction transactor id " + transaction);
                                 transaction.setTransactorId(transactor.getTransactorId());
+                                log.debug("Preparing transaction for save: " + transaction);
                             });
                     })
-                    .collectList() // Collect the transactions with IDs properly set
-                    .flatMapMany(transactionRepository::saveAll) // Save all transactions reactively
+                    .collectList()
+                    .flatMapMany(transactionRepository::saveAll)
                     .collectList();
+                // Combine all saved entities and prepare the final BudgetDto
+                return Mono.zip(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
+                    .flatMap(tuple -> {
+                        List<Category> savedCategories = tuple.getT1();
+                        List<Transactor> savedTransactors = tuple.getT2();
+                        List<Transaction> savedTransactions = tuple.getT3();
 
-                // After saving all data, fetch the complete object graph using loadNestedObjects
-                return Mono.zip(savedCategories, savedTransactors, savedTransactions)
-                    .then(loadNestedObjects(savedBudget))
+                        log.debug("Categories saved: " + savedCategories.size());
+                        log.debug("Transactors saved: " + savedTransactors.size());
+                        log.debug("Transactions saved: " + savedTransactions.size());
+
+                        savedBudget.setCategories(savedCategories);
+                        savedBudget.setTransactors(savedTransactors);
+
+                        return Mono.just(savedBudget);
+                    })
                     .map(budgetMapper::toBudgetDto);
             });
     }

@@ -7,14 +7,14 @@ CREATE TABLE budgets (
 -- Table for Categories
 CREATE TABLE categories (
     category_id BIGSERIAL PRIMARY KEY,
-    budget_id BIGINT REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    budget_id BIGINT,
     name VARCHAR(255) NOT NULL
 );
 
 -- Table for Transactors
 CREATE TABLE transactors (
     transactor_id BIGSERIAL PRIMARY KEY,
-    budget_id BIGINT REFERENCES budgets(budget_id) ON DELETE CASCADE,
+    budget_id BIGINT,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100)
@@ -23,8 +23,8 @@ CREATE TABLE transactors (
 -- Table for Transactions
 CREATE TABLE transactions (
     transaction_id BIGSERIAL PRIMARY KEY,
-    transactor_id BIGINT REFERENCES transactors(transactor_id) ON DELETE CASCADE,
-    category_id BIGINT REFERENCES categories(category_id) ON DELETE SET NULL,
+    transactor_id BIGINT,
+    category_id BIGINT,
     description VARCHAR(500) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     date DATE NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE transactions (
 );
 
 -- Sequences for ID Generation (Optional if using PostgreSQL auto-increment)
-CREATE SEQUENCE budget_sequence START 1;
-CREATE SEQUENCE category_sequence START 1;
-CREATE SEQUENCE transactor_sequence START 1;
-CREATE SEQUENCE transaction_sequence START 1;
+CREATE SEQUENCE budget_sequence START 1 INCREMENT BY 1;
+CREATE SEQUENCE category_sequence START 1 INCREMENT BY 1;
+CREATE SEQUENCE transactor_sequence START 1 INCREMENT BY 1;
+CREATE SEQUENCE transaction_sequence START 1 INCREMENT BY 1;

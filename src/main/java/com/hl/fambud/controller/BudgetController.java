@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${app.base-url}/fambud")
+@RequestMapping("${app.base-url}/budgets")
 public class BudgetController {
 
     private final BudgetService budgetService;

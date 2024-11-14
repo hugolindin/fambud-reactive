@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class TestDataGenerator {
 
-    public final static String BUDGET_BASE_URL = "/api/fambud";
+    public final static String BUDGET_BASE_URL = "/api/budgets";
 
     public static BudgetDto getBudgetDto() {
         return BudgetDto.builder()

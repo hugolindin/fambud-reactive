@@ -46,8 +46,14 @@ public class BudgetService {
     }
 
     private Mono<BudgetDto> saveBudgetAndNestedObjects(Budget budget) {
+        List<Category> categories = budget.getCategories();
+        List<Transactor> transactors = budget.getTransactors();
+        budget.setCategories(List.of());
+        budget.setTransactors(List.of());
         return budgetRepository.save(budget)
             .flatMap(savedBudget -> {
+                budget.setCategories(categories);
+                budget.setTransactors(transactors);
                 log.debug("saved budget " + savedBudget);
                 // Update the budgetId for categories
                 budget.getCategories().forEach(category -> {

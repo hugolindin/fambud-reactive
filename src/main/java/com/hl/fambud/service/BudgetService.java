@@ -5,6 +5,7 @@ import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.model.Budget;
 import com.hl.fambud.model.Category;
+import com.hl.fambud.model.Transaction;
 import com.hl.fambud.model.Transactor;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,36 +48,32 @@ public class BudgetService {
     }
 
     private Mono<BudgetDto> saveBudgetAndNestedObjects(Budget budget) {
-        List<Category> categories = budget.getCategories();
-        List<Transactor> transactors = budget.getTransactors();
-        budget.setCategories(List.of());
-        budget.setTransactors(List.of());
         return budgetRepository.save(budget)
             .flatMap(savedBudget -> {
-                budget.setCategories(categories);
-                budget.setTransactors(transactors);
                 log.debug("saved budget " + savedBudget);
-                // Update the budgetId for categories
-                budget.getCategories().forEach(category -> {
-                    log.debug("set category budget id " + category);
-                    category.setBudgetId(savedBudget.getBudgetId());
-                });
-                // Update the budgetId for transactors
-                budget.getTransactors().forEach(transactor -> {
-                    log.debug("set transactor budget id " + transactor);
-                    transactor.setBudgetId(savedBudget.getBudgetId());
-                });
-                // save categories and transactors
-                Mono<List<Category>> savedCategoriesMono =
-                    categoryRepository.saveAll(budget.getCategories()).collectList();
-                Mono<List<Transactor>> savedTransactorsMono =
-                    transactorRepository.saveAll(budget.getTransactors()).collectList();
-                // Save transactions for each transactor after saving transactors
-                Mono<Void> savedTransactionsMono = savedTransactorsMono
-                    .flatMapMany(Flux::fromIterable)
+                // Update the budgetId for categories and save them
+                Mono<List<Category>> savedCategoriesMono = Flux.fromIterable(budget.getCategories())
+                    .doOnNext(category -> {
+                        log.debug("set category budget id " + category);
+                        category.setBudgetId(savedBudget.getBudgetId());
+                    })
+                    .collectList()
+                    .flatMapMany(categoryRepository::saveAll)
+                    .collectList();
+                // Update the budgetId for transactors and save them
+                Mono<List<Transactor>> savedTransactorsMono = Flux.fromIterable(budget.getTransactors())
+                    .doOnNext(transactor -> {
+                        log.debug("set transactor budget id " + transactor);
+                        transactor.setBudgetId(savedBudget.getBudgetId());
+                    })
+                    .collectList()
+                    .flatMapMany(transactorRepository::saveAll)
+                    .collectList();
+                // Update the transactorId for transactions of each transactor and save them
+                Mono<List<Transaction>> savedTransactionsMono = savedTransactorsMono
+                    .flatMapMany(Flux::fromIterable)  // Create a Flux from the list of transactors
                     .flatMap(transactor -> {
-                        log.debug("ready to set transaction ids for transactor " + transactor);
-                        // Set the correct transactorId for each transaction
+                        // Update transactorId for each transaction reactively
                         return Flux.fromIterable(transactor.getTransactions())
                             .doOnNext(transaction -> {
                                 log.debug("set transaction transactor id " + transaction);
@@ -83,13 +81,33 @@ public class BudgetService {
                             });
                     })
                     .collectList()
-                    .flatMapMany(transactionRepository::saveAll)
-                    .then();
+                    .flatMapMany(transactionRepository::saveAll) // Save all updated transactions to repository
+                    .collectList();
 
-                // Save the categories, transactors, and transactions, then load the complete object graph using getBudget
-                return Mono.when(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
-                    .then(getBudget(savedBudget.getBudgetId()));
-            });
+                // Combine saved categories, transactors, and transactions
+                return Mono.zip(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
+                    .flatMap(tuple -> {
+                        List<Category> categories = tuple.getT1();
+                        List<Transactor> transactors = tuple.getT2();
+                        List<Transaction> transactions = tuple.getT3();
+
+                        // Set the saved lists back into the budget
+                        savedBudget.setCategories(categories);
+                        savedBudget.setTransactors(transactors);
+
+                        // Update each transactor's transaction list with the saved transactions
+                        transactors.forEach(transactor -> {
+                            List<Transaction> transactorTransactions = transactions.stream()
+                                .filter(transaction -> transaction.getTransactorId().equals(transactor.getTransactorId()))
+                                .collect(Collectors.toList());
+                            transactor.setTransactions(transactorTransactions);
+                        });
+
+                        return Mono.just(savedBudget);
+                    });
+            })
+            .map(budgetMapper::toBudgetDto)
+            .doOnNext(budgetDto -> log.debug("saved budget dto object graph " + budgetDto));
     }
 
     public Mono<BudgetDto> getBudget(Long budgetId) {

@@ -1,0 +1,36 @@
+{
+  "budgetId": null,
+  "name": "Family Monthly Budget",
+  "categories": [
+    {
+      "categoryId": null,
+      "budgetId": null,
+      "name": "Groceries"
+    },
+    {
+      "categoryId": null,
+      "budgetId": null,
+      "name": "Utilities"
+    }
+  ],
+  "transactors": [
+    {
+      "transactorId": null,
+      "budgetId": null,
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "transactions": [
+      ]
+    },
+    {
+      "transactorId": null,
+      "budgetId": null,
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "transactions": [
+      ]
+    }
+  ]
+}

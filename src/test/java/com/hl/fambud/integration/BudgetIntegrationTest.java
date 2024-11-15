@@ -19,6 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -42,7 +45,7 @@ public class BudgetIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private BudgetDto budgetDto;
+    private BudgetDto sharedBudgetDto;
 
     private ObjectMapper objectMapper;
 
@@ -55,7 +58,7 @@ public class BudgetIntegrationTest {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        budgetDto = TestDataGenerator.getBudgetDto();
+        sharedBudgetDto = TestDataGenerator.getBudgetDto();
         budgetRepository.deleteAll().block();
         categoryRepository.deleteAll().block();
         transactorRepository.deleteAll().block();
@@ -65,25 +68,44 @@ public class BudgetIntegrationTest {
     @Test
     public void crud() throws Exception {
         // create
-        BudgetDto createdBudgetDto = create();
-        assertBudget(createdBudgetDto);
+        BudgetDto createdBudgetDto = post(sharedBudgetDto);
         Long createdBudgetId = createdBudgetDto.getBudgetId();
-        transactorRepository.findAll()
-            .doOnNext(transactor -> log.debug("transactor " + transactor));
+        assertBudget(createdBudgetDto);
         // read
-        BudgetDto retrievedBudgetDto = webTestClient
-            .get()
-            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", createdBudgetId)
+        BudgetDto retrievedBudgetDto = get(createdBudgetId);
+        assertBudget(retrievedBudgetDto);
+        // update
+        updateData(retrievedBudgetDto);
+        BudgetDto updatedBudgetDto = put(retrievedBudgetDto);
+        assertUpdatedBudget(updatedBudgetDto);
+        // delete
+        delete(retrievedBudgetDto);
+        // verify delete
+        webTestClient.get()
+            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", retrievedBudgetDto.getBudgetId())
             .exchange()
             .expectStatus()
-            .isOk()
-            .expectBody(BudgetDto.class)
-            .returnResult()
-            .getResponseBody();
-        assertBudget(retrievedBudgetDto);
+            .isNotFound();
     }
 
-    private BudgetDto create() {
+    @Test
+    public void getAll() throws Exception {
+        post(TestDataGenerator.getBudgetDto());
+        post(TestDataGenerator.getBudgetDto());
+        post(TestDataGenerator.getBudgetDto());
+        List<BudgetDto> allBudgetDtos = webTestClient
+            .get()
+            .uri(TestDataGenerator.BUDGET_BASE_URL)
+            .exchange()
+            .expectBodyList(BudgetDto.class)
+            .returnResult()
+            .getResponseBody();
+        assertNotNull(allBudgetDtos);
+        assertEquals(3, allBudgetDtos.size());
+        allBudgetDtos.forEach(this::assertBudget);
+    }
+
+    private BudgetDto post(BudgetDto budgetDto) {
         TestDataGenerator.setIdsToNull(budgetDto);
         return webTestClient
             .post()
@@ -96,6 +118,54 @@ public class BudgetIntegrationTest {
             .expectBody(BudgetDto.class)
             .returnResult()
             .getResponseBody();
+    }
+
+    private BudgetDto get(Long budgetId) {
+        return webTestClient
+            .get()
+            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetId)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(BudgetDto.class)
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private BudgetDto put(BudgetDto budgetDto) {
+        return webTestClient
+            .put()
+            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetDto.getBudgetId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(budgetDto)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(BudgetDto.class)
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private void delete(BudgetDto budgetDto) {
+        webTestClient.delete()
+            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetDto.getBudgetId())
+            .exchange()
+            .expectStatus()
+            .isNoContent();
+    }
+
+    private void updateData(BudgetDto budgetDto) {
+        budgetDto.setName("Updated budget name");
+        budgetDto.getCategories().forEach(categoryDto ->
+            categoryDto.setName("Updated category name"));
+        budgetDto.getTransactors().forEach(transactorDto -> {
+            transactorDto.setFirstName("Updated first name");
+            transactorDto.setLastName("Updated last name");
+            transactorDto.getTransactions().forEach(transactionDto -> {
+                transactionDto.setDescription("Updated transaction description");
+                transactionDto.setAmount(BigDecimal.valueOf(999.99));
+            });
+        });
     }
 
     @SneakyThrows
@@ -117,6 +187,21 @@ public class BudgetIntegrationTest {
             transactorDto.getTransactions().forEach(transactionDto -> {
                 assertNotNull(transactionDto.getTransactionId());
                 assertEquals(transactorDto.getTransactorId(), transactionDto.getTransactorId());
+            });
+        });
+    }
+
+    private void assertUpdatedBudget(BudgetDto budgetDto) {
+        assertBudget(budgetDto);
+        assertEquals("Updated budget name", budgetDto.getName());
+        budgetDto.getCategories().forEach(categoryDto ->
+            assertEquals("Updated category name", categoryDto.getName()));
+        budgetDto.getTransactors().forEach(transactorDto -> {
+            assertEquals("Updated first name", transactorDto.getFirstName());
+            assertEquals("Updated last name", transactorDto.getLastName());
+            transactorDto.getTransactions().forEach(transactionDto -> {
+                assertEquals("Updated transaction description", transactionDto.getDescription());
+                assertEquals(BigDecimal.valueOf(999.99), transactionDto.getAmount());
             });
         });
     }

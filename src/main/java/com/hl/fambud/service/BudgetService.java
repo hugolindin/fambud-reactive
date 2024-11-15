@@ -46,6 +46,41 @@ public class BudgetService {
         return saveBudgetAndNestedObjects(budget);
     }
 
+    public Mono<BudgetDto> getBudget(Long budgetId) {
+        return budgetRepository.findById(budgetId)
+            .flatMap(this::loadNestedObjects)
+            .map(budgetMapper::toBudgetDto)
+            .switchIfEmpty(Mono.error(new EntityNotFoundException("Budget not found with id: " + budgetId)));
+    }
+
+    public Flux<BudgetDto> getAllBudgets() {
+        return budgetRepository.findAll()
+            .flatMap(this::loadNestedObjects)
+            .doOnError(exception -> log.error("Unable to get all budgets ", exception))
+            .map(budgetMapper::toBudgetDto);
+    }
+
+    public Mono<BudgetDto> updateBudget(Long budgetId, @Valid BudgetDto budgetDto) {
+        return budgetRepository.findById(budgetId)
+            .switchIfEmpty(Mono.error(new EntityNotFoundException("Budget not found with ID " + budgetId)))
+            .flatMap(retrievedBudget -> {
+                log.debug("budget retrieved from DB " + retrievedBudget);
+                budgetMapper.updateBudgetFromDto(budgetDto, retrievedBudget);
+                log.debug("retrieved budget updated with new data " + retrievedBudget);
+                return saveBudgetAndNestedObjects(retrievedBudget);
+            });
+    }
+
+    public Mono<Void> deleteBudget(Long budgetId) {
+        Mono<Void> transactions = transactorRepository.findByBudgetId(budgetId)
+            .flatMap(transactor -> transactionRepository.deleteByTransactorId(transactor.getTransactorId()))
+            .then();
+        Mono<Void> transactors = transactorRepository.deleteByBudgetId(budgetId);
+        Mono<Void> categories = categoryRepository.deleteByBudgetId(budgetId);
+        Mono<Void> budget = budgetRepository.deleteById(budgetId);
+        return transactions.then(transactors).then(categories).then(budget);
+    }
+
     private Mono<BudgetDto> saveBudgetAndNestedObjects(Budget budget) {
         return budgetRepository.save(budget)
             .flatMap(savedBudget -> {
@@ -108,14 +143,6 @@ public class BudgetService {
             });
     }
 
-
-    public Mono<BudgetDto> getBudget(Long budgetId) {
-        return budgetRepository.findById(budgetId)
-            .flatMap(this::loadNestedObjects)
-            .map(budgetMapper::toBudgetDto)
-            .switchIfEmpty(Mono.error(new EntityNotFoundException("Budget not found with id: " + budgetId)));
-    }
-
     private Mono<Budget> loadNestedObjects(Budget budget) {
         // Fetch categories associated with the budget
         Mono<List<Category>> categoriesMono = categoryRepository.findByBudgetId(budget.getBudgetId()).collectList();
@@ -149,6 +176,5 @@ public class BudgetService {
                     });
             });
     }
-
 
 }

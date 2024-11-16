@@ -1,6 +1,7 @@
 package com.hl.fambud.controller;
 
 import com.hl.fambud.dto.BudgetDto;
+import com.hl.fambud.exception.InvalidPathVariableException;
 import com.hl.fambud.service.BudgetService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static com.hl.fambud.util.BudgetUtil.INVALID_BUDGET_ID;
 
 @RestController
 @AllArgsConstructor
@@ -41,9 +44,9 @@ public class BudgetController {
     @PutMapping("/{budgetId}")
     public Mono<ResponseEntity<BudgetDto>> updateBudget(
         @PathVariable Long budgetId, @Valid @RequestBody BudgetDto budgetDto) {
-        /*if (budgetId == null || budgetId <= 0) {
-            throw new InvalidPathVariableException(INVALID_BUDGET_ID + ": " + budgetId);
-        }*/
+        if (budgetId == null || budgetId <= 0) {
+            throw new InvalidPathVariableException(INVALID_BUDGET_ID + budgetId);
+        }
         return budgetService.updateBudget(budgetId, budgetDto)
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -51,9 +54,9 @@ public class BudgetController {
 
     @DeleteMapping("/{budgetId}")
     public Mono<ResponseEntity<Void>> deleteBudget(@PathVariable Long budgetId) {
-        /*if (budgetId == null || budgetId <= 0) {
+        if (budgetId == null || budgetId <= 0) {
             throw new InvalidPathVariableException(INVALID_BUDGET_ID + ": " + budgetId);
-        }*/
+        }
         return budgetService.deleteBudget(budgetId)
             .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
             .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));

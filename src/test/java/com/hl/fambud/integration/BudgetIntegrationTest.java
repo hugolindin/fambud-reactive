@@ -45,12 +45,12 @@ public class BudgetIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private DatabaseClient databaseClient;
+
     private BudgetDto sharedBudgetDto;
 
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private DatabaseClient databaseClient;
 
 
     @BeforeEach
@@ -59,20 +59,15 @@ public class BudgetIntegrationTest {
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         sharedBudgetDto = TestDataGenerator.getBudgetDto();
-        budgetRepository.deleteAll().block();
-        categoryRepository.deleteAll().block();
-        transactorRepository.deleteAll().block();
-        transactionRepository.deleteAll().block();
     }
 
     @Test
     public void crud() throws Exception {
         // create
         BudgetDto createdBudgetDto = post(sharedBudgetDto);
-        Long createdBudgetId = createdBudgetDto.getBudgetId();
         assertBudget(createdBudgetDto);
         // read
-        BudgetDto retrievedBudgetDto = get(createdBudgetId);
+        BudgetDto retrievedBudgetDto = get(createdBudgetDto.getBudgetId());
         assertBudget(retrievedBudgetDto);
         // update
         updateData(retrievedBudgetDto);
@@ -80,7 +75,6 @@ public class BudgetIntegrationTest {
         assertUpdatedBudget(updatedBudgetDto);
         // delete
         delete(retrievedBudgetDto);
-        // verify delete
         webTestClient.get()
             .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", retrievedBudgetDto.getBudgetId())
             .exchange()

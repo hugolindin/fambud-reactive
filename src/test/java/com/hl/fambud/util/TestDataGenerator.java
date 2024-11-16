@@ -13,6 +13,7 @@ import java.util.Arrays;
 public class TestDataGenerator {
 
     public final static String BUDGET_BASE_URL = "/api/budgets";
+    public final static String CATEGORY_BASE_URL = "/api/categories";
 
     public static BudgetDto getBudgetDto() {
         return BudgetDto.builder()
@@ -91,5 +92,13 @@ public class TestDataGenerator {
                 transactionDto.setCategoryId(null);
             });
         });
+    }
+
+    public static CategoryDto getCategoryDto() {
+        return CategoryDto.builder()
+            .budgetId(1L)
+            .categoryId(1L)
+            .name("Insurance")
+            .build();
     }
 }

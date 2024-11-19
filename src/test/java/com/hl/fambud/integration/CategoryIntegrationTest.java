@@ -26,12 +26,6 @@ public class CategoryIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private DatabaseClient databaseClient;
-
     private CategoryDto sharedCategoryDto;
 
     private ObjectMapper objectMapper;

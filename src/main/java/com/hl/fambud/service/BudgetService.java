@@ -16,8 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,9 +33,6 @@ public class BudgetService {
     private final TransactionRepository transactionRepository;
     private final BudgetMapper budgetMapper;
     private final ObjectMapper objectMapper;
-
-    @Autowired
-    private DatabaseClient databaseClient;
 
     @SneakyThrows
     public Mono<BudgetDto> createBudget(@Valid BudgetDto budgetDto) {

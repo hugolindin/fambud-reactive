@@ -164,7 +164,7 @@ public class BudgetIntegrationTest {
 
     @SneakyThrows
     private void assertBudget(BudgetDto budgetDto) {
-        log.debug("assertBudget \n" + objectMapper.writeValueAsString(budgetDto));
+        log.debug("assertBudget" +  System.lineSeparator() + objectMapper.writeValueAsString(budgetDto));
         assertNotNull(budgetDto);
         assertNotNull(budgetDto.getBudgetId());
         budgetDto.getCategories().forEach(categoryDto -> {

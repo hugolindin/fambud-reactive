@@ -23,6 +23,7 @@
 		<org.postgresql.version>42.7.4</org.postgresql.version>
 		<org.db.flyway.version>10.20.1</org.db.flyway.version>
 		<io.r2bdc.postresql.version>0.8.13.RELEASE</io.r2bdc.postresql.version>
+		<org.apache.commons.csv.version>1.12.0</org.apache.commons.csv.version>
 	</properties>
 
 	<dependencies>
@@ -91,6 +92,11 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>${org.apache.commons.csv.version}</version>
 		</dependency>
 		<!-- test -->
 		<dependency>

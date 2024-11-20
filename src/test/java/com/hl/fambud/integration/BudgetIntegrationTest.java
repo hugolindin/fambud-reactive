@@ -48,8 +48,6 @@ public class BudgetIntegrationTest {
     @Autowired
     private DatabaseClient databaseClient;
 
-    private BudgetDto sharedBudgetDto;
-
     private ObjectMapper objectMapper;
 
 
@@ -58,13 +56,18 @@ public class BudgetIntegrationTest {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        sharedBudgetDto = TestDataGenerator.getBudgetDto();
     }
 
     @Test
-    public void crud() throws Exception {
-        // create
-        BudgetDto createdBudgetDto = post(sharedBudgetDto);
+    public void bareBudgetCrud() throws Exception {
+        BudgetDto createdBudgetDto = post(BudgetDto.builder().name("Budget").build());
+        assertNotNull(createdBudgetDto);
+        assertNotNull(createdBudgetDto.getBudgetId());
+    }
+
+    @Test
+    public void fullBudgetCrud() throws Exception {
+        BudgetDto createdBudgetDto = post(TestDataGenerator.getBudgetDto());
         assertBudget(createdBudgetDto);
         // read
         BudgetDto retrievedBudgetDto = get(createdBudgetDto.getBudgetId());

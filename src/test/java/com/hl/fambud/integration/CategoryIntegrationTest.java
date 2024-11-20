@@ -24,8 +24,6 @@ public class CategoryIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    private CategoryDto sharedCategoryDto;
-
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -33,13 +31,12 @@ public class CategoryIntegrationTest {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        sharedCategoryDto = TestDataGenerator.getCategoryDto();
     }
 
     @Test
     public void crud() {
         // create
-        CategoryDto createdCategoryDto = post(sharedCategoryDto);
+        CategoryDto createdCategoryDto = post(TestDataGenerator.getCategoryDto());
         assertCategory(createdCategoryDto);
         // read
         CategoryDto retrievedCategoryDto = get(createdCategoryDto.getCategoryId());

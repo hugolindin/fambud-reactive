@@ -2,8 +2,10 @@ package com.hl.fambud.mapper;
 
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
+import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.model.Budget;
 import com.hl.fambud.model.Category;
+import com.hl.fambud.model.Transaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
@@ -24,4 +26,10 @@ public interface BudgetMapper {
     Category toCategory(CategoryDto categoryDto);
 
     void updateCategoryFromDto(CategoryDto categoryDto, @MappingTarget Category category);
+
+    TransactionDto transactionToTransactionDto(Transaction transaction);
+
+    Transaction toTransaction(TransactionDto transactionDto);
+
+    void updateTransactionFromTransactionDto(TransactionDto transactionDto, @MappingTarget Transaction transaction);
 }

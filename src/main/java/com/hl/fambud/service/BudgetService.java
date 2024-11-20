@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.ap.shaded.freemarker.core.BugException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -80,12 +81,14 @@ public class BudgetService {
                 log.debug("Saved budget: " + savedBudget);
 
                 // Update the budgetId for categories and save them reactively
-                Flux<Category> updatedCategoriesFlux = Flux.fromIterable(budget.getCategories())
-                    .map(category -> {
-                        category.setBudgetId(savedBudget.getBudgetId());
-                        log.debug("Prepared category for save: " + category);
-                        return category;
-                    });
+                Flux<Category> updatedCategoriesFlux = budget.getCategories() != null
+                    ? Flux.fromIterable(budget.getCategories())
+                        .map(category -> {
+                            category.setBudgetId(savedBudget.getBudgetId());
+                            log.debug("Prepared category for save: " + category);
+                            return category;
+                        })
+                    : Flux.empty();
 
                 Mono<List<Category>> savedCategoriesMono = updatedCategoriesFlux
                     .flatMap(categoryRepository::save)
@@ -97,12 +100,14 @@ public class BudgetService {
                     .share();
 
                 // Update the budgetId for transactors and save them reactively
-                Flux<Transactor> updatedTransactorsFlux = Flux.fromIterable(budget.getTransactors())
-                    .map(transactor -> {
-                        transactor.setBudgetId(savedBudget.getBudgetId());
-                        log.debug("Prepared transactor for save: " + transactor);
-                        return transactor;
-                    });
+                Flux<Transactor> updatedTransactorsFlux = budget.getTransactors() != null
+                    ? Flux.fromIterable(budget.getTransactors())
+                        .map(transactor -> {
+                            transactor.setBudgetId(savedBudget.getBudgetId());
+                            log.debug("Prepared transactor for save: " + transactor);
+                            return transactor;
+                        })
+                    : Flux.empty();
 
                 Mono<List<Transactor>> savedTransactorsMono = updatedTransactorsFlux
                     .flatMap(transactorRepository::save)
@@ -114,12 +119,14 @@ public class BudgetService {
                     .share();
 
                 // Update the budgetId for transactions and save them reactively
-                Flux<Transaction> updatedTransactionsFlux = Flux.fromIterable(budget.getTransactions())
-                    .map(transaction -> {
-                        transaction.setBudgetId(savedBudget.getBudgetId());
-                        log.debug("Prepared transaction for save: " + transaction);
-                        return transaction;
-                    });
+                Flux<Transaction> updatedTransactionsFlux = budget.getTransactions() != null
+                    ? Flux.fromIterable(budget.getTransactions())
+                        .map(transaction -> {
+                            transaction.setBudgetId(savedBudget.getBudgetId());
+                            log.debug("Prepared transaction for save: " + transaction);
+                            return transaction;
+                        })
+                    : Flux.empty();
 
                 Mono<List<Transaction>> savedTransactionsMono = updatedTransactionsFlux
                     .flatMap(transactionRepository::save)

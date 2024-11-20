@@ -14,6 +14,7 @@ public class TestDataGenerator {
 
     public final static String BUDGET_BASE_URL = "/api/budgets";
     public final static String CATEGORY_BASE_URL = "/api/categories";
+    public final static String TRANSACTION_BASE_URL = "/api/transactions";
 
     public static BudgetDto getBudgetDto() {
         return BudgetDto.builder()
@@ -81,9 +82,12 @@ public class TestDataGenerator {
 
     public static void setIdsToNull(BudgetDto budgetDto) {
         budgetDto.setBudgetId(null);
-        budgetDto.getCategories().forEach(categoryDto -> categoryDto.setCategoryId(null));
-        budgetDto.getTransactors().forEach(transactorDto -> transactorDto.setTransactorId(null));
-        budgetDto.getTransactions().forEach(transactionDto -> {
+        if (budgetDto.getCategories() != null)
+            budgetDto.getCategories().forEach(categoryDto -> categoryDto.setCategoryId(null));
+        if (budgetDto.getTransactors() != null)
+                budgetDto.getTransactors().forEach(transactorDto -> transactorDto.setTransactorId(null));
+        if (budgetDto.getTransactions() != null)
+            budgetDto.getTransactions().forEach(transactionDto -> {
             transactionDto.setTransactionId(null);
             transactionDto.setCategoryId(null);
             transactionDto.setBudgetId(null);
@@ -97,4 +101,17 @@ public class TestDataGenerator {
             .name("Insurance")
             .build();
     }
+
+    public static TransactionDto getTransactionDto() {
+        return TransactionDto.builder()
+            .transactorId(1L)
+            .categoryId(1L)
+            .budgetId(1L)
+            .description("Initial Description")
+            .amount(BigDecimal.valueOf(50.00))
+            .date(LocalDate.now())
+            .type(TransactionType.EXPENSE)
+            .build();
+    }
+
 }

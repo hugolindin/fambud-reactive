@@ -1,9 +1,15 @@
 package com.hl.fambud.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hl.fambud.dto.TransactionDto;
+import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.model.Transaction;
 import com.hl.fambud.model.TransactionType;
 import com.hl.fambud.repository.TransactionRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -29,7 +35,48 @@ import java.util.UUID;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final BudgetMapper budgetMapper;
+    private final ObjectMapper objectMapper;
     private final Scheduler parallelScheduler = Schedulers.parallel();
+
+    @SneakyThrows
+    public Mono<TransactionDto> createTransaction(@Valid TransactionDto transactionDto) {
+        Transaction transaction = budgetMapper.toTransaction(transactionDto);
+        log.debug("createTransaction " + objectMapper.writeValueAsString(transaction));
+        return transactionRepository.save(transaction)
+            .map(budgetMapper::transactionToTransactionDto);
+    }
+
+    public Mono<TransactionDto> getTransaction(Long transactionId) {
+        return transactionRepository.findById(transactionId)
+            .map(budgetMapper::transactionToTransactionDto)
+            .switchIfEmpty(Mono.error(new EntityNotFoundException("Transaction not found with id: " + transactionId)));
+    }
+
+    public Flux<TransactionDto> getAllTransactions() {
+        return transactionRepository.findAll()
+            .doOnError(exception -> log.error("Unable to get all transactions", exception))
+            .map(budgetMapper::transactionToTransactionDto);
+    }
+
+    public Mono<TransactionDto> updateTransaction(Long transactionId, @Valid TransactionDto transactionDto) {
+        return transactionRepository.findById(transactionId)
+            .switchIfEmpty(Mono.error(new EntityNotFoundException("Transaction not found with ID " + transactionId)))
+            .flatMap(retrievedTransaction -> {
+                log.debug("Transaction retrieved from DB: " + retrievedTransaction);
+                budgetMapper.updateTransactionFromTransactionDto(transactionDto, retrievedTransaction);
+                log.debug("Retrieved transaction updated with new data: " + retrievedTransaction);
+                return transactionRepository.save(retrievedTransaction)
+                    .map(budgetMapper::transactionToTransactionDto);
+            });
+    }
+
+    public Mono<Void> deleteTransaction(Long transactionId) {
+        return transactionRepository.findById(transactionId)
+            .switchIfEmpty(Mono.error(new EntityNotFoundException("Transaction not found with ID " + transactionId)))
+            .flatMap(transaction -> transactionRepository.deleteById(transactionId))
+            .then();
+    }
 
     public Mono<String> startCsvImport(Long transactorId, FilePart filePart) {
         String importJobId = UUID.randomUUID().toString();

@@ -1,2 +1,2 @@
-ALTER TABLE transactors
+ALTER TABLE transactions
 ADD COLUMN budget_id BIGINT NOT NULL;

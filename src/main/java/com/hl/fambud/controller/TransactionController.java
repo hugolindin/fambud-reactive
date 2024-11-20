@@ -69,7 +69,7 @@ public class TransactionController {
     @PostMapping(value = "/import/{budgetId}")
     public Mono<ResponseEntity<String>> startCsvImport(
         @PathVariable Long budgetId, @RequestPart("file") FilePart filePart) {
-        log.debug("file import for transactorId " + budgetId);
+        log.debug("file import for budgetId " + budgetId);
         return transactionService.startCsvImport(budgetId, filePart)
             .map(importJobId -> new ResponseEntity<>(importJobId, HttpStatus.ACCEPTED))
             .onErrorResume(e -> Mono.just(new ResponseEntity<>("Failed to initiate import", HttpStatus.BAD_REQUEST)));

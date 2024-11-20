@@ -78,13 +78,13 @@ public class TransactionService {
             .then();
     }
 
-    public Mono<String> startCsvImport(Long transactorId, FilePart filePart) {
+    public Mono<String> startCsvImport(Long budgetId, FilePart filePart) {
         String importJobId = UUID.randomUUID().toString();
 
         log.info("Import job {} started with status: IN_PROGRESS", importJobId);
 
         return convertToMultipartFile(filePart)
-            .flatMapMany(multipartFile -> parseCsvFile(transactorId, multipartFile))
+            .flatMapMany(multipartFile -> parseCsvFile(budgetId, multipartFile))
             .flatMap(transaction -> {
                 log.debug("Saving transaction: " + transaction);
                 return transactionRepository.save(transaction);
@@ -148,7 +148,7 @@ public class TransactionService {
             });
     }
 
-    private Flux<Transaction> parseCsvFile(Long transactorId, MultipartFile file) {
+    private Flux<Transaction> parseCsvFile(Long budgetId, MultipartFile file) {
         return Mono.fromCallable(() -> file.getInputStream())
             .subscribeOn(parallelScheduler)
             .flatMapMany(inputStream -> {
@@ -161,7 +161,7 @@ public class TransactionService {
                     return Flux.fromIterable(records)
                         .parallel()
                         .runOn(parallelScheduler)
-                        .flatMap(record -> mapToTransaction(transactorId, record))
+                        .flatMap(record -> mapToTransaction(budgetId, record))
                         .sequential();  // Gather results back into a single sequence
 
                 } catch (IOException e) {
@@ -171,10 +171,10 @@ public class TransactionService {
             });
     }
 
-    private Mono<Transaction> mapToTransaction(Long transactorId, CSVRecord csvRecord) {
+    private Mono<Transaction> mapToTransaction(Long budgetId, CSVRecord csvRecord) {
         try {
             Transaction transaction = new Transaction();
-            transaction.setTransactorId(transactorId);
+            transaction.setBudgetId(budgetId);
             transaction.setDescription(csvRecord.get("Description"));
 
             String dateStr = csvRecord.get("Date");

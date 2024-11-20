@@ -3,7 +3,6 @@ package com.hl.fambud.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hl.fambud.dto.CategoryDto;
-import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.util.TestDataGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -102,7 +100,7 @@ public class CategoryIntegrationTest {
 
     private void delete(CategoryDto categoryDto) {
         webTestClient.delete()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", categoryDto.getBudgetId())
+            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", categoryDto.getCategoryId())
             .exchange()
             .expectStatus()
             .isNoContent();
@@ -110,11 +108,7 @@ public class CategoryIntegrationTest {
 
     private void assertCategory(CategoryDto categoryDto) {
         assertNotNull(categoryDto.getCategoryId());
-        assertEquals(1L, categoryDto.getCategoryId());
+        assertEquals(1L, categoryDto.getBudgetId());
         assertEquals("Insurance", categoryDto.getName());
-    }
-
-    private void updateData(CategoryDto categoryDto) {
-        categoryDto.setName("Updated Insurance");
     }
 }

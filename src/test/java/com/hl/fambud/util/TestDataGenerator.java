@@ -35,62 +35,58 @@ public class TestDataGenerator {
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
-                    .transactions(Arrays.asList(
-                        TransactionDto.builder()
-                            .transactionId(1L)
-                            .description("Supermarket shopping")
-                            .amount(BigDecimal.valueOf(150.00))
-                            .date(LocalDate.now())
-                            .type(TransactionType.EXPENSE)
-                            .categoryId(1L)
-                            .build(),
-                        TransactionDto.builder()
-                            .transactionId(2L)
-                            .description("Monthly Electricity Bill")
-                            .amount(BigDecimal.valueOf(75.00))
-                            .date(LocalDate.now().minusDays(5))
-                            .type(TransactionType.EXPENSE)
-                            .categoryId(2L)
-                            .build()
-                    ))
                     .build(),
                 TransactorDto.builder()
                     .transactorId(2L)
                     .firstName("Jane")
                     .lastName("Smith")
                     .email("jane.smith@example.com")
-                    .transactions(Arrays.asList(
-                        TransactionDto.builder()
-                            .transactionId(3L)
-                            .description("Freelance Income")
-                            .amount(BigDecimal.valueOf(500.00))
-                            .date(LocalDate.now().minusDays(10))
-                            .type(TransactionType.INCOME)
-                            .categoryId(1L)
-                            .build(),
-                        TransactionDto.builder()
-                            .transactionId(4L)
-                            .description("Internet Bill")
-                            .amount(BigDecimal.valueOf(50.00))
-                            .date(LocalDate.now().minusDays(2))
-                            .type(TransactionType.EXPENSE)
-                            .categoryId(2L)
-                            .build()
-                    ))
                     .build()
             ))
+            .transactions(Arrays.asList(
+                TransactionDto.builder()
+                    .transactionId(1L)
+                    .description("Supermarket shopping")
+                    .amount(BigDecimal.valueOf(150.00))
+                    .date(LocalDate.now())
+                    .type(TransactionType.EXPENSE)
+                    .categoryId(1L)
+                    .build(),
+                TransactionDto.builder()
+                    .transactionId(2L)
+                    .description("Monthly Electricity Bill")
+                    .amount(BigDecimal.valueOf(75.00))
+                    .date(LocalDate.now().minusDays(5))
+                    .type(TransactionType.EXPENSE)
+                    .categoryId(2L)
+                    .build(),
+                TransactionDto.builder()
+                    .transactionId(3L)
+                    .description("Freelance Income")
+                    .amount(BigDecimal.valueOf(500.00))
+                    .date(LocalDate.now().minusDays(10))
+                    .type(TransactionType.INCOME)
+                    .categoryId(1L)
+                    .build(),
+                TransactionDto.builder()
+                    .transactionId(4L)
+                    .description("Internet Bill")
+                    .amount(BigDecimal.valueOf(50.00))
+                    .date(LocalDate.now().minusDays(2))
+                    .type(TransactionType.EXPENSE)
+                    .categoryId(2L)
+                    .build()))
             .build();
     }
 
     public static void setIdsToNull(BudgetDto budgetDto) {
         budgetDto.setBudgetId(null);
         budgetDto.getCategories().forEach(categoryDto -> categoryDto.setCategoryId(null));
-        budgetDto.getTransactors().forEach(transactorDto -> {
-            transactorDto.setTransactorId(null);
-            transactorDto.getTransactions().forEach(transactionDto -> {
-                transactionDto.setTransactionId(null);
-                transactionDto.setCategoryId(null);
-            });
+        budgetDto.getTransactors().forEach(transactorDto -> transactorDto.setTransactorId(null));
+        budgetDto.getTransactions().forEach(transactionDto -> {
+            transactionDto.setTransactionId(null);
+            transactionDto.setCategoryId(null);
+            transactionDto.setBudgetId(null);
         });
     }
 

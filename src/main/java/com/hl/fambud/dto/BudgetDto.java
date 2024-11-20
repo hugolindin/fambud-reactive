@@ -22,4 +22,6 @@ public class BudgetDto {
     private List<CategoryDto> categories;
 
     private List<TransactorDto> transactors;
+
+    private List<TransactionDto> transactions;
 }

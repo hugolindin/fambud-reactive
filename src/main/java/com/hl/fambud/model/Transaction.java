@@ -22,6 +22,8 @@ public class Transaction {
     @SequenceGenerator(name = "transaction_sequence", sequenceName = "transaction_sequence", allocationSize = 1)
     private Long transactionId;
 
+    private Long budgetId;
+
     private Long transactorId;
 
     private Long categoryId;

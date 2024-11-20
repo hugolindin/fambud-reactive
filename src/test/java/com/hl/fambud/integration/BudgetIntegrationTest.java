@@ -155,10 +155,10 @@ public class BudgetIntegrationTest {
         budgetDto.getTransactors().forEach(transactorDto -> {
             transactorDto.setFirstName("Updated first name");
             transactorDto.setLastName("Updated last name");
-            transactorDto.getTransactions().forEach(transactionDto -> {
+        });
+        budgetDto.getTransactions().forEach(transactionDto -> {
                 transactionDto.setDescription("Updated transaction description");
                 transactionDto.setAmount(BigDecimal.valueOf(999.99));
-            });
         });
     }
 
@@ -176,12 +176,11 @@ public class BudgetIntegrationTest {
             assertNotNull(transactorDto.getTransactorId());
             assertEquals(budgetDto.getBudgetId(), transactorDto.getBudgetId());
         });
-        budgetDto.getTransactors().forEach(transactorDto -> {
-            assertEquals(2, transactorDto.getTransactions().size());
-            transactorDto.getTransactions().forEach(transactionDto -> {
+        assertEquals(4, budgetDto.getTransactions().size());
+        budgetDto.getTransactions()
+            .forEach(transactionDto -> {
                 assertNotNull(transactionDto.getTransactionId());
-                assertEquals(transactorDto.getTransactorId(), transactionDto.getTransactorId());
-            });
+                assertEquals(budgetDto.getBudgetId(), transactionDto.getBudgetId());
         });
     }
 
@@ -193,10 +192,10 @@ public class BudgetIntegrationTest {
         budgetDto.getTransactors().forEach(transactorDto -> {
             assertEquals("Updated first name", transactorDto.getFirstName());
             assertEquals("Updated last name", transactorDto.getLastName());
-            transactorDto.getTransactions().forEach(transactionDto -> {
-                assertEquals("Updated transaction description", transactionDto.getDescription());
-                assertEquals(BigDecimal.valueOf(999.99), transactionDto.getAmount());
-            });
+        });
+        budgetDto.getTransactions().forEach(transactionDto -> {
+            assertEquals("Updated transaction description", transactionDto.getDescription());
+            assertEquals(BigDecimal.valueOf(999.99), transactionDto.getAmount());
         });
     }
 }

@@ -22,6 +22,8 @@ public class TransactionDto {
 
     private Long categoryId;
 
+    private Long budgetId;
+
     @NotBlank
     @Size(max = 500)
     private String description;

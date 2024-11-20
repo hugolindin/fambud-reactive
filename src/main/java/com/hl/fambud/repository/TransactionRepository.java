@@ -7,7 +7,11 @@ import reactor.core.publisher.Mono;
 
 public interface TransactionRepository extends ReactiveCrudRepository<Transaction, Long> {
 
+    Flux<Transaction> findByBudgetId(Long budgetId);
+
     Flux<Transaction> findByTransactorId(Long transactorId);
+
+    Mono<Void> deleteByBudgetId(Long budgetId);
 
     Mono<Void> deleteByTransactorId(Long transactorId);
 }

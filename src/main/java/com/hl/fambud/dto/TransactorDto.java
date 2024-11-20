@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @Builder
@@ -27,6 +25,4 @@ public class TransactorDto {
 
     @Size(max = 100)
     private String email;
-
-    private List<TransactionDto> transactions;
 }

@@ -34,4 +34,7 @@ public class Budget {
     @Transient
     private List<Transactor> transactors;
 
+    @Transient
+    List<Transaction> transactions;
+
 }

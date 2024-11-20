@@ -67,9 +67,7 @@ public class BudgetService {
     }
 
     public Mono<Void> deleteBudget(Long budgetId) {
-        Mono<Void> transactions = transactorRepository.findByBudgetId(budgetId)
-            .flatMap(transactor -> transactionRepository.deleteByTransactorId(transactor.getTransactorId()))
-            .then();
+        Mono<Void> transactions = transactionRepository.deleteByBudgetId(budgetId);
         Mono<Void> transactors = transactorRepository.deleteByBudgetId(budgetId);
         Mono<Void> categories = categoryRepository.deleteByBudgetId(budgetId);
         Mono<Void> budget = budgetRepository.deleteById(budgetId);
@@ -115,23 +113,21 @@ public class BudgetService {
                     })
                     .share();
 
-                // After saving transactors, update transactions with transactorId and persist them reactively
-                Mono<List<Transaction>> savedTransactionsMono = savedTransactorsMono
-                    .flatMapMany(Flux::fromIterable)
-                    .flatMap(transactor -> Flux.fromIterable(transactor.getTransactions())
-                        .map(transaction -> {
-                            transaction.setTransactorId(transactor.getTransactorId());
-                            log.debug("Prepared transaction for save: " + transaction);
-                            return transaction;
-                        })
-                        .flatMap(transactionRepository::save)
-                    )
-                    .collectList()
-                    .map(transactions -> {
-                        log.debug("Saved transactions: " + transactions.size());
-                        return transactions;
+                // Update the budgetId for transactions and save them reactively
+                Flux<Transaction> updatedTransactionsFlux = Flux.fromIterable(budget.getTransactions())
+                    .map(transaction -> {
+                        transaction.setBudgetId(savedBudget.getBudgetId());
+                        log.debug("Prepared transaction for save: " + transaction);
+                        return transaction;
                     });
 
+                Mono<List<Transaction>> savedTransactionsMono = updatedTransactionsFlux
+                    .flatMap(transactionRepository::save)
+                    .collectList()
+                    .map(transactions -> {
+                        log.debug("Saved transactions: " + transactions);
+                        return transactions;
+                    });
                 // Combine all saved entities and return the full budget using getBudget
                 return Mono.when(savedCategoriesMono, savedTransactorsMono, savedTransactionsMono)
                     .then(getBudget(savedBudget.getBudgetId()));
@@ -139,36 +135,25 @@ public class BudgetService {
     }
 
     private Mono<Budget> loadNestedObjects(Budget budget) {
-        // Fetch categories associated with the budget
-        Mono<List<Category>> categoriesMono = categoryRepository.findByBudgetId(budget.getBudgetId()).collectList();
-
-        // Fetch transactors associated with the budget
-        Mono<List<Transactor>> transactorsMono = transactorRepository.findByBudgetId(budget.getBudgetId()).collectList();
-
-        // Fetch categories and transactors concurrently
-        return Mono.zip(categoriesMono, transactorsMono)
+        Mono<List<Category>> categoriesMono =
+            categoryRepository.findByBudgetId(budget.getBudgetId()).collectList();
+        Mono<List<Transactor>> transactorsMono =
+            transactorRepository.findByBudgetId(budget.getBudgetId()).collectList();
+        Mono<List<Transaction>> transactionsMono =
+            transactionRepository.findByBudgetId(budget.getBudgetId()).collectList();
+        // Fetch categories, transactions and transactors concurrently
+        return Mono.zip(categoriesMono, transactorsMono, transactionsMono)
             .flatMap(tuple -> {
                 List<Category> categories = tuple.getT1();
                 List<Transactor> transactors = tuple.getT2();
+                List<Transaction> transactions = tuple.getT3();
                 log.debug("Categories loaded: " + categories);
                 log.debug("Transactors loaded: " + transactors);
-
-                // Fetch transactions for each transactor reactively and enrich each transactor
-                return Flux.fromIterable(transactors)
-                    .flatMap(transactor -> transactionRepository.findByTransactorId(transactor.getTransactorId())
-                        .collectList()
-                        .map(transactions -> {
-                            transactor.setTransactions(transactions);
-                            return transactor;
-                        })
-                    )
-                    .collectList()
-                    .map(finalTransactors -> {
-                        // Assign the fetched and enriched lists back to the budget
-                        budget.setCategories(categories);
-                        budget.setTransactors(finalTransactors);
-                        return budget;
-                    });
+                log.debug("Transactions loaded: " + transactions);
+                budget.setCategories(categories);
+                budget.setTransactors(transactors);
+                budget.setTransactions(transactions);
+                return Mono.just(budget);
             });
     }
 

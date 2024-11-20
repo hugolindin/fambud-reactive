@@ -25,6 +25,7 @@ CREATE TABLE transactions (
     transaction_id BIGSERIAL PRIMARY KEY,
     transactor_id BIGINT,
     category_id BIGINT,
+    budget_id BIGINT,
     description VARCHAR(500) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     date DATE NOT NULL,

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.hl.fambud.util.BudgetUtil.INVALID_BUDGET_ID;
+import static com.hl.fambud.util.BudgetUtil.INVALID_CATEGORY_ID;
 
 @RestController
 @AllArgsConstructor
@@ -42,7 +42,7 @@ public class CategoryController {
     public Mono<ResponseEntity<CategoryDto>> updateCategory(
         @PathVariable Long categoryId, @Valid @RequestBody CategoryDto categoryDto) {
         if (categoryId == null || categoryId <= 0) {
-            throw new InvalidPathVariableException(INVALID_BUDGET_ID + categoryId);
+            throw new InvalidPathVariableException(INVALID_CATEGORY_ID + categoryId);
         }
         return categoryService.updateCategory(categoryId, categoryDto)
             .map(ResponseEntity::ok)
@@ -52,7 +52,7 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}")
     public Mono<ResponseEntity<Void>> deleteCategory(@PathVariable Long categoryId) {
         if (categoryId == null || categoryId <= 0) {
-            throw new InvalidPathVariableException(INVALID_BUDGET_ID + ": " + categoryId);
+            throw new InvalidPathVariableException(INVALID_CATEGORY_ID + ": " + categoryId);
         }
         return categoryService.deleteCategory(categoryId)
             .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))

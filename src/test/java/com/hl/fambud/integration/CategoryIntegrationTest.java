@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.util.TestDataGenerator;
+import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ public class CategoryIntegrationTest {
     @Test
     public void crud() {
         // create
-        CategoryDto createdCategoryDto = post(TestDataGenerator.getCategoryDto());
+        CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, TestDataGenerator.getCategoryDto());
         assertCategory(createdCategoryDto);
         // read
         CategoryDto retrievedCategoryDto = get(createdCategoryDto.getCategoryId());
@@ -52,21 +53,6 @@ public class CategoryIntegrationTest {
             .exchange()
             .expectStatus()
             .isNotFound();
-    }
-
-    private CategoryDto post(CategoryDto categoryDto) {
-        categoryDto.setCategoryId(null);
-        return webTestClient
-            .post()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(categoryDto)
-            .exchange()
-            .expectStatus()
-            .isCreated()
-            .expectBody(CategoryDto.class)
-            .returnResult()
-            .getResponseBody();
     }
 
     private CategoryDto get(Long categoryId) {

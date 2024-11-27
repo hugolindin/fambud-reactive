@@ -10,6 +10,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface BudgetMapper {
 
@@ -27,9 +29,13 @@ public interface BudgetMapper {
 
     void updateCategoryFromDto(CategoryDto categoryDto, @MappingTarget Category category);
 
+    List<Category> categoryDtoListToCategoryList(List<CategoryDto> list);
+
     TransactionDto transactionToTransactionDto(Transaction transaction);
 
     Transaction toTransaction(TransactionDto transactionDto);
 
     void updateTransactionFromTransactionDto(TransactionDto transactionDto, @MappingTarget Transaction transaction);
+
+    List<Transaction> transactionDtoListToTransactionList(List<TransactionDto> list);
 }

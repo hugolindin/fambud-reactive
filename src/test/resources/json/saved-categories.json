@@ -1,0 +1,107 @@
+[
+  {
+    "categoryId": 15,
+    "budgetId": 16,
+    "name": "Mortgage"
+  },
+  {
+    "categoryId": 16,
+    "budgetId": 16,
+    "name": "Utilities"
+  },
+  {
+    "categoryId": 17,
+    "budgetId": 16,
+    "name": "Schooling"
+  },
+  {
+    "categoryId": 18,
+    "budgetId": 16,
+    "name": "Clothing"
+  },
+  {
+    "categoryId": 19,
+    "budgetId": 16,
+    "name": "Healthcare"
+  },
+  {
+    "categoryId": 20,
+    "budgetId": 16,
+    "name": "Insurance"
+  },
+  {
+    "categoryId": 21,
+    "budgetId": 16,
+    "name": "Fitness"
+  },
+  {
+    "categoryId": 22,
+    "budgetId": 16,
+    "name": "Car"
+  },
+  {
+    "categoryId": 23,
+    "budgetId": 16,
+    "name": "Entertainment"
+  },
+  {
+    "categoryId": 24,
+    "budgetId": 16,
+    "name": "Public Transport"
+  },
+  {
+    "categoryId": 25,
+    "budgetId": 16,
+    "name": "Work Food"
+  },
+  {
+    "categoryId": 26,
+    "budgetId": 16,
+    "name": "Groceries"
+  },
+  {
+    "categoryId": 27,
+    "budgetId": 16,
+    "name": "Dining"
+  },
+  {
+    "categoryId": 28,
+    "budgetId": 16,
+    "name": "Streaming"
+  },
+  {
+    "categoryId": 29,
+    "budgetId": 16,
+    "name": "Cleaners"
+  },
+  {
+    "categoryId": 30,
+    "budgetId": 16,
+    "name": "Hair"
+  },
+  {
+    "categoryId": 31,
+    "budgetId": 16,
+    "name": "Garden"
+  },
+  {
+    "categoryId": 32,
+    "budgetId": 16,
+    "name": "Work"
+  },
+  {
+    "categoryId": 33,
+    "budgetId": 16,
+    "name": "Household"
+  },
+  {
+    "categoryId": 34,
+    "budgetId": 16,
+    "name": "Lotteries"
+  },
+  {
+    "categoryId": 35,
+    "budgetId": 16,
+    "name": "Taxi"
+  }
+]

@@ -1,13 +1,13 @@
 package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
 import com.hl.fambud.repository.TransactorRepository;
 import com.hl.fambud.util.TestDataGenerator;
+import com.hl.fambud.util.TestUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,21 +53,19 @@ public class BudgetIntegrationTest {
 
     @BeforeEach
     public void init() {
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper = TestUtil.getObjectMapper();
     }
 
     @Test
     public void bareBudgetCrud() throws Exception {
-        BudgetDto createdBudgetDto = post(BudgetDto.builder().name("Budget").build());
+        BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
         assertNotNull(createdBudgetDto);
         assertNotNull(createdBudgetDto.getBudgetId());
     }
 
     @Test
     public void fullBudgetCrud() throws Exception {
-        BudgetDto createdBudgetDto = post(TestDataGenerator.getBudgetDto());
+        BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto());
         assertBudget(createdBudgetDto);
         // read
         BudgetDto retrievedBudgetDto = get(createdBudgetDto.getBudgetId());
@@ -87,9 +85,9 @@ public class BudgetIntegrationTest {
 
     @Test
     public void getAll() throws Exception {
-        post(TestDataGenerator.getBudgetDto());
-        post(TestDataGenerator.getBudgetDto());
-        post(TestDataGenerator.getBudgetDto());
+        TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto());
+        TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto());
+        TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto());
         List<BudgetDto> allBudgetDtos = webTestClient
             .get()
             .uri(TestDataGenerator.BUDGET_BASE_URL)
@@ -100,21 +98,6 @@ public class BudgetIntegrationTest {
         assertNotNull(allBudgetDtos);
         assertEquals(3, allBudgetDtos.size());
         allBudgetDtos.forEach(this::assertBudget);
-    }
-
-    private BudgetDto post(BudgetDto budgetDto) {
-        TestDataGenerator.setIdsToNull(budgetDto);
-        return webTestClient
-            .post()
-            .uri(TestDataGenerator.BUDGET_BASE_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(budgetDto)
-            .exchange()
-            .expectStatus()
-            .isCreated()
-            .expectBody(BudgetDto.class)
-            .returnResult()
-            .getResponseBody();
     }
 
     private BudgetDto get(Long budgetId) {

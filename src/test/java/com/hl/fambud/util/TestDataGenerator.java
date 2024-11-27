@@ -1,14 +1,20 @@
 package com.hl.fambud.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.dto.TransactorDto;
+import com.hl.fambud.mapper.BudgetMapper;
+import com.hl.fambud.mapper.BudgetMapperImpl;
 import com.hl.fambud.model.TransactionType;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 public class TestDataGenerator {
 
@@ -100,6 +106,13 @@ public class TestDataGenerator {
             .categoryId(1L)
             .name("Insurance")
             .build();
+    }
+
+    public static List<CategoryDto> getCategoryDtosFromJsonFile() throws IOException {
+        ClassPathResource categoryFileResource = new ClassPathResource("json/saved-categories.json");
+        BudgetMapper budgetMapper = new BudgetMapperImpl();
+        return TestUtil.getObjectMapper().readValue(categoryFileResource.getFile(),
+            new TypeReference<List<CategoryDto>>() {});
     }
 
     public static TransactionDto getTransactionDto() {

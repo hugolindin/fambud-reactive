@@ -1,11 +1,11 @@
 package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.model.TransactionType;
 import com.hl.fambud.repository.TransactionRepository;
 import com.hl.fambud.util.TestDataGenerator;
+import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -40,9 +40,7 @@ public class TransactionIntegrationTest {
 
     @BeforeEach
     public void init() {
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper = TestUtil.getObjectMapper();
     }
 
     @Test

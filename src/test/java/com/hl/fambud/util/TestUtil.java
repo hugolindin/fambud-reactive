@@ -31,11 +31,11 @@ public class TestUtil {
         return objectMapper;
     }
 
-    public static CategoryDto postCategory(WebTestClient webTestClient, CategoryDto categoryDto) {
+    public static CategoryDto postCategory(WebTestClient webTestClient, Long budgetId, CategoryDto categoryDto) {
         categoryDto.setCategoryId(null);
         return webTestClient
             .post()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL)
+            .uri(TestDataGenerator.CATEGORY_BASE_URL, budgetId)
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(categoryDto)
             .exchange()

@@ -19,32 +19,44 @@ import java.util.List;
 public class TestDataGenerator {
 
     public final static String BUDGET_BASE_URL = "/api/budgets";
-    public final static String CATEGORY_BASE_URL = "/api/categories";
-    public final static String TRANSACTION_BASE_URL = "/api/transactions";
+    public final static String BUDGET_ID_URL = BUDGET_BASE_URL + "/{budgetId}";
+    public final static String CATEGORY_BASE_URL = BUDGET_ID_URL + "/categories";
+    public final static String CATEGORY_ID_URL = CATEGORY_BASE_URL + "/{categoryId}";
+    public final static String TRANSACTION_BASE_URL = BUDGET_ID_URL + "/transactions";
+    public final static String TRANSACTION_ID_URL = TRANSACTION_BASE_URL + "/{transactionId}";
+    public final static Long TEST_BUDGET_ID = 1L;
+    public final static Long TEST_CATEGORY_ID = 1L;
+    public final static Long TEST_CATEGORY_ID_2 = 2L;
+    public final static Long TEST_TRANSACTION_ID = 1L;
+    public final static Long TEST_TRANSACTION_ID_2 = 2L;
+    public final static Long TEST_TRANSACTION_ID_3 = 3L;
+    public final static Long TEST_TRANSACTION_ID_4 = 4L;
+    public final static Long TEST_TRANSACTOR_ID = 1L;
+    public final static Long TEST_TRANSACTOR_ID_2 = 2L;
 
     public static BudgetDto getBudgetDto() {
         return BudgetDto.builder()
-            .budgetId(1L)
+            .budgetId(TEST_BUDGET_ID)
             .name("Family Monthly Budget")
             .categories(Arrays.asList(
                 CategoryDto.builder()
-                    .categoryId(1L)
+                    .categoryId(TEST_CATEGORY_ID)
                     .name("Groceries")
                     .build(),
                 CategoryDto.builder()
-                    .categoryId(2L)
+                    .categoryId(TEST_CATEGORY_ID_2)
                     .name("Utilities")
                     .build()
             ))
             .transactors(Arrays.asList(
                 TransactorDto.builder()
-                    .transactorId(1L)
+                    .transactorId(TEST_TRANSACTOR_ID)
                     .firstName("John")
                     .lastName("Doe")
                     .email("john.doe@example.com")
                     .build(),
                 TransactorDto.builder()
-                    .transactorId(2L)
+                    .transactorId(TEST_TRANSACTOR_ID_2)
                     .firstName("Jane")
                     .lastName("Smith")
                     .email("jane.smith@example.com")
@@ -52,36 +64,36 @@ public class TestDataGenerator {
             ))
             .transactions(Arrays.asList(
                 TransactionDto.builder()
-                    .transactionId(1L)
+                    .transactionId(TEST_TRANSACTION_ID)
                     .description("Supermarket shopping")
                     .amount(BigDecimal.valueOf(150.00))
                     .date(LocalDate.now())
                     .type(TransactionType.EXPENSE)
-                    .categoryId(1L)
+                    .categoryId(TEST_CATEGORY_ID)
                     .build(),
                 TransactionDto.builder()
-                    .transactionId(2L)
+                    .transactionId(TEST_TRANSACTION_ID_2)
                     .description("Monthly Electricity Bill")
                     .amount(BigDecimal.valueOf(75.00))
                     .date(LocalDate.now().minusDays(5))
                     .type(TransactionType.EXPENSE)
-                    .categoryId(2L)
+                    .categoryId(TEST_CATEGORY_ID_2)
                     .build(),
                 TransactionDto.builder()
-                    .transactionId(3L)
+                    .transactionId(TEST_TRANSACTION_ID_3)
                     .description("Freelance Income")
                     .amount(BigDecimal.valueOf(500.00))
                     .date(LocalDate.now().minusDays(10))
                     .type(TransactionType.INCOME)
-                    .categoryId(1L)
+                    .categoryId(TEST_CATEGORY_ID)
                     .build(),
                 TransactionDto.builder()
-                    .transactionId(4L)
+                    .transactionId(TEST_TRANSACTION_ID_4)
                     .description("Internet Bill")
                     .amount(BigDecimal.valueOf(50.00))
                     .date(LocalDate.now().minusDays(2))
                     .type(TransactionType.EXPENSE)
-                    .categoryId(2L)
+                    .categoryId(TEST_CATEGORY_ID_2)
                     .build()))
             .build();
     }
@@ -102,8 +114,8 @@ public class TestDataGenerator {
 
     public static CategoryDto getCategoryDto() {
         return CategoryDto.builder()
-            .budgetId(1L)
-            .categoryId(1L)
+            .budgetId(TEST_BUDGET_ID)
+            .categoryId(TEST_CATEGORY_ID)
             .name("Insurance")
             .build();
     }
@@ -117,9 +129,9 @@ public class TestDataGenerator {
 
     public static TransactionDto getTransactionDto() {
         return TransactionDto.builder()
-            .transactorId(1L)
-            .categoryId(1L)
-            .budgetId(1L)
+            .transactorId(TEST_TRANSACTOR_ID)
+            .categoryId(TEST_CATEGORY_ID)
+            .budgetId(TEST_BUDGET_ID)
             .description("Initial Description")
             .amount(BigDecimal.valueOf(50.00))
             .date(LocalDate.now())

@@ -50,7 +50,6 @@ public class BudgetIntegrationTest {
 
     private ObjectMapper objectMapper;
 
-
     @BeforeEach
     public void init() {
         objectMapper = TestUtil.getObjectMapper();
@@ -77,7 +76,7 @@ public class BudgetIntegrationTest {
         // delete
         delete(retrievedBudgetDto);
         webTestClient.get()
-            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", retrievedBudgetDto.getBudgetId())
+            .uri(TestDataGenerator.BUDGET_ID_URL, retrievedBudgetDto.getBudgetId())
             .exchange()
             .expectStatus()
             .isNotFound();
@@ -103,7 +102,7 @@ public class BudgetIntegrationTest {
     private BudgetDto get(Long budgetId) {
         return webTestClient
             .get()
-            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetId)
+            .uri(TestDataGenerator.BUDGET_ID_URL, budgetId)
             .exchange()
             .expectStatus()
             .isOk()
@@ -115,7 +114,7 @@ public class BudgetIntegrationTest {
     private BudgetDto put(BudgetDto budgetDto) {
         return webTestClient
             .put()
-            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetDto.getBudgetId())
+            .uri(TestDataGenerator.BUDGET_ID_URL, budgetDto.getBudgetId())
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(budgetDto)
             .exchange()
@@ -128,7 +127,7 @@ public class BudgetIntegrationTest {
 
     private void delete(BudgetDto budgetDto) {
         webTestClient.delete()
-            .uri(TestDataGenerator.BUDGET_BASE_URL + "/{budgetId}", budgetDto.getBudgetId())
+            .uri(TestDataGenerator.BUDGET_ID_URL, budgetDto.getBudgetId())
             .exchange()
             .expectStatus()
             .isNoContent();

@@ -22,6 +22,7 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 
+import static com.hl.fambud.util.TestDataGenerator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -46,32 +47,33 @@ public class TransactionIntegrationTest {
     @Test
     public void crud() {
         // create
-        TransactionDto createdTransactionDto = post(TestDataGenerator.getTransactionDto());
+        TransactionDto createdTransactionDto = post(TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
         assertTransaction(createdTransactionDto);
         // read
-        TransactionDto retrievedTransactionDto = get(createdTransactionDto.getTransactionId());
+        TransactionDto retrievedTransactionDto = get(TEST_BUDGET_ID, createdTransactionDto.getTransactionId());
         assertTransaction(retrievedTransactionDto);
         // update
         retrievedTransactionDto.setDescription("Updated Description");
         retrievedTransactionDto.setAmount(BigDecimal.valueOf(100.00));
-        TransactionDto updatedTransactionDto = put(retrievedTransactionDto);
+        TransactionDto updatedTransactionDto = put(TEST_BUDGET_ID, retrievedTransactionDto);
         assertEquals("Updated Description", updatedTransactionDto.getDescription());
         assertEquals(0, updatedTransactionDto.getAmount().compareTo(BigDecimal.valueOf(100.00)));
 
         // delete
-        delete(retrievedTransactionDto);
+        delete(TEST_BUDGET_ID, retrievedTransactionDto);
         webTestClient.get()
-            .uri(TestDataGenerator.TRANSACTION_BASE_URL + "/{transactionId}", retrievedTransactionDto.getTransactionId())
+            .uri(TRANSACTION_ID_URL,
+                TEST_BUDGET_ID, retrievedTransactionDto.getTransactionId())
             .exchange()
             .expectStatus()
             .isNotFound();
     }
 
-    private TransactionDto post(TransactionDto transactionDto) {
+    private TransactionDto post(Long budgetId, TransactionDto transactionDto) {
         transactionDto.setTransactionId(null);
         return webTestClient
             .post()
-            .uri(TestDataGenerator.TRANSACTION_BASE_URL)
+            .uri(TRANSACTION_BASE_URL, budgetId)
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(transactionDto)
             .exchange()
@@ -82,10 +84,10 @@ public class TransactionIntegrationTest {
             .getResponseBody();
     }
 
-    private TransactionDto get(Long transactionId) {
+    private TransactionDto get(Long budgetId, Long transactionId) {
         return webTestClient
             .get()
-            .uri(TestDataGenerator.TRANSACTION_BASE_URL + "/{transactionId}", transactionId)
+            .uri(TRANSACTION_ID_URL, budgetId, transactionId)
             .exchange()
             .expectStatus()
             .isOk()
@@ -94,10 +96,10 @@ public class TransactionIntegrationTest {
             .getResponseBody();
     }
 
-    private TransactionDto put(TransactionDto transactionDto) {
+    private TransactionDto put(Long budgetId, TransactionDto transactionDto) {
         return webTestClient
             .put()
-            .uri(TestDataGenerator.TRANSACTION_BASE_URL + "/{transactionId}", transactionDto.getTransactionId())
+            .uri(TRANSACTION_ID_URL, budgetId, transactionDto.getTransactionId())
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(transactionDto)
             .exchange()
@@ -108,9 +110,9 @@ public class TransactionIntegrationTest {
             .getResponseBody();
     }
 
-    private void delete(TransactionDto transactionDto) {
+    private void delete(Long budgetId, TransactionDto transactionDto) {
         webTestClient.delete()
-            .uri(TestDataGenerator.TRANSACTION_BASE_URL + "/{transactionId}", transactionDto.getTransactionId())
+            .uri(TRANSACTION_ID_URL, budgetId, transactionDto.getTransactionId())
             .exchange()
             .expectStatus()
             .isNoContent();

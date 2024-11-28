@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import static com.hl.fambud.util.TestDataGenerator.TEST_BUDGET_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -37,28 +38,29 @@ public class CategoryIntegrationTest {
     @Test
     public void crud() {
         // create
-        CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, TestDataGenerator.getCategoryDto());
-        assertCategory(createdCategoryDto);
+        CategoryDto createdCategoryDto = TestUtil.postCategory(
+            webTestClient, TEST_BUDGET_ID, TestDataGenerator.getCategoryDto());
+        assertCategory(TEST_BUDGET_ID, createdCategoryDto);
         // read
-        CategoryDto retrievedCategoryDto = get(createdCategoryDto.getCategoryId());
-        assertCategory(retrievedCategoryDto);
+        CategoryDto retrievedCategoryDto = get(TEST_BUDGET_ID, createdCategoryDto.getCategoryId());
+        assertCategory(TEST_BUDGET_ID, retrievedCategoryDto);
         // update
         retrievedCategoryDto.setName("Updated Insurance");
-        CategoryDto updatedCategoryDto = put(retrievedCategoryDto);
+        CategoryDto updatedCategoryDto = put(TEST_BUDGET_ID, retrievedCategoryDto);
         assertEquals("Updated Insurance", updatedCategoryDto.getName());
         // delete
-        delete(retrievedCategoryDto);
+        delete(TEST_BUDGET_ID, retrievedCategoryDto);
         webTestClient.get()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", retrievedCategoryDto.getCategoryId())
+            .uri(TestDataGenerator.CATEGORY_ID_URL, TEST_BUDGET_ID, retrievedCategoryDto.getCategoryId())
             .exchange()
             .expectStatus()
             .isNotFound();
     }
 
-    private CategoryDto get(Long categoryId) {
+    private CategoryDto get(Long budgetId, Long categoryId) {
         return webTestClient
             .get()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", categoryId)
+            .uri(TestDataGenerator.CATEGORY_ID_URL , budgetId, categoryId)
             .exchange()
             .expectStatus()
             .isOk()
@@ -67,10 +69,10 @@ public class CategoryIntegrationTest {
             .getResponseBody();
     }
 
-    private CategoryDto put(CategoryDto categoryDto) {
+    private CategoryDto put(Long budgetId, CategoryDto categoryDto) {
         return webTestClient
             .put()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", categoryDto.getCategoryId())
+            .uri(TestDataGenerator.CATEGORY_ID_URL, budgetId, categoryDto.getCategoryId())
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(categoryDto)
             .exchange()
@@ -81,17 +83,17 @@ public class CategoryIntegrationTest {
             .getResponseBody();
     }
 
-    private void delete(CategoryDto categoryDto) {
+    private void delete(Long budgetId, CategoryDto categoryDto) {
         webTestClient.delete()
-            .uri(TestDataGenerator.CATEGORY_BASE_URL + "/{categoryId}", categoryDto.getCategoryId())
+            .uri(TestDataGenerator.CATEGORY_ID_URL, budgetId, categoryDto.getCategoryId())
             .exchange()
             .expectStatus()
             .isNoContent();
     }
 
-    private void assertCategory(CategoryDto categoryDto) {
+    private void assertCategory(Long budgetId, CategoryDto categoryDto) {
         assertNotNull(categoryDto.getCategoryId());
-        assertEquals(1L, categoryDto.getBudgetId());
+        assertEquals(budgetId, categoryDto.getBudgetId());
         assertEquals("Insurance", categoryDto.getName());
     }
 }

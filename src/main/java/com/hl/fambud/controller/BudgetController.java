@@ -17,7 +17,7 @@ import static com.hl.fambud.util.BudgetUtil.INVALID_BUDGET_ID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${app.base-url}/budgets")
+@RequestMapping("${app.base-url}")
 public class BudgetController {
 
     private static final Logger log = LoggerFactory.getLogger(BudgetController.class);

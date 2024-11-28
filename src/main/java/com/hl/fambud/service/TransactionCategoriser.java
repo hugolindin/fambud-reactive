@@ -1,13 +1,13 @@
 package com.hl.fambud.service;
 
 import com.hl.fambud.model.Category;
-import com.hl.fambud.model.Transaction;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,33 +44,37 @@ public class TransactionCategoriser {
         return resultMap;
     }
 
-    public Mono<Void> categorise(Long budgetId, List<Transaction> transactionList, File mappingFile) throws IOException {
-        log.debug("budget " + budgetId + " transactions " + transactionList.size());
-        Flux<Category> categories = categoryRepository.findByBudgetId(budgetId);
-        Mono<Map<String, Long>> categoryMapMono = categories.collectMap(Category::getName, Category::getCategoryId);
-        Map<String, String> descriptionCategoryMap = loadMappingFile(mappingFile);
-        log.debug("mapping file map " + descriptionCategoryMap);
-        Flux<Transaction> transactionFlux = Flux.fromIterable(transactionList);
-        return categoryMapMono
-            .flatMapMany(categoryMap ->
-                transactionFlux.flatMap(transaction -> {
-                    String description = transaction.getDescription();
-                    return Flux.fromIterable(descriptionCategoryMap.entrySet())
-                        .filter(entry -> description.toLowerCase().contains(entry.getKey().toLowerCase()))
-                        .next()
-                        .map(entry -> {
-                            String mappingCategoryName = entry.getValue();
-                            Long categoryId = categoryMap.get(mappingCategoryName);
-                            if (categoryId != null) {
-                                log.trace("transaction " + transaction.getTransactionId() + " " + transaction.getDescription()
-                                    + " category " + categoryId + " " + mappingCategoryName);
-                                transaction.setCategoryId(categoryId);
-                                transactionRepository.save(transaction);
-                            }
-                            return transaction;
-                        });
-                })
-            )
-            .then();
+    public Mono<Void> categorise(Long budgetId) {
+        log.debug("categorise transactions for budget " + budgetId);
+        return Mono.fromCallable(() -> {
+            ClassPathResource mappingFileResource = new ClassPathResource("transaction-category-mapping-241121.csv");
+            return mappingFileResource.getFile();
+        }).flatMap(file -> {
+            Map<String, String> descriptionCategoryMap = loadMappingFile(file);
+            log.debug("description to category map " + descriptionCategoryMap);
+            Flux<Category> categories = categoryRepository.findByBudgetId(budgetId);
+            Mono<Map<String, Long>> categoryMapMono = categories.collectMap(Category::getName, Category::getCategoryId);
+            return categoryMapMono
+                .flatMapMany(categoryMap ->
+                    transactionRepository.findByBudgetId(budgetId).flatMap(transaction -> {
+                        String description = transaction.getDescription();
+                        return Flux.fromIterable(descriptionCategoryMap.entrySet())
+                            .filter(entry -> description.toLowerCase().contains(entry.getKey().toLowerCase()))
+                            .next()
+                            .map(entry -> {
+                                String mappingCategoryName = entry.getValue();
+                                Long categoryId = categoryMap.get(mappingCategoryName);
+                                if (categoryId != null) {
+                                    log.trace("transaction " + transaction.getTransactionId() + " " + transaction.getDescription()
+                                        + " category " + categoryId + " " + mappingCategoryName);
+                                    transaction.setCategoryId(categoryId);
+                                    transactionRepository.save(transaction);
+                                }
+                                return transaction;
+                            });
+                    })
+                ).then();
+        });
     }
+
 }

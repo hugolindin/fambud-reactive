@@ -23,7 +23,7 @@ spring:
       schema:
         generate: false
 app:
-  base-url: /api
+  base-url: /api/budgets
 
 logging:
   level:

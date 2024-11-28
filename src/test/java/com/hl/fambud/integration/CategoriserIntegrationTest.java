@@ -55,7 +55,7 @@ public class CategoriserIntegrationTest {
         categoryDtoList.forEach(categoryDto -> {
             categoryDto.setCategoryId(null);
             categoryDto.setBudgetId(createdBudgetId);
-            CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, categoryDto);
+            CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, createdBudgetId, categoryDto);
             System.out.println("created category " + createdCategoryDto);
         });
         ClassPathResource transactionFileResource = new ClassPathResource("json/categorisation-test-transactions.json");

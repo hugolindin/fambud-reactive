@@ -2,6 +2,7 @@ package com.hl.fambud.controller;
 
 import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.exception.InvalidPathVariableException;
+import com.hl.fambud.service.TransactionCategoriser;
 import com.hl.fambud.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,14 +18,18 @@ import static com.hl.fambud.util.BudgetUtil.INVALID_TRANSACTION_ID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${app.base-url}/transactions")
+@RequestMapping("${app.base-url}/{budgetId}/transactions")
 @Slf4j
 public class TransactionController {
 
     private final TransactionService transactionService;
 
+    private final TransactionCategoriser transactionCategoriser;
+
     @PostMapping
-    public Mono<ResponseEntity<TransactionDto>> createTransaction(@Valid @RequestBody TransactionDto transactionDto) {
+    public Mono<ResponseEntity<TransactionDto>> createTransaction(
+        @PathVariable Long budgetId, @Valid @RequestBody TransactionDto transactionDto) {
+        transactionDto.setBudgetId(budgetId);
         return transactionService.createTransaction(transactionDto)
             .map(transaction -> new ResponseEntity<>(transaction, HttpStatus.CREATED));
     }
@@ -66,7 +71,7 @@ public class TransactionController {
             .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping(value = "/import/{budgetId}")
+    @PostMapping(value = "/import")
     public Mono<ResponseEntity<String>> startCsvImport(
         @PathVariable Long budgetId, @RequestPart("file") FilePart filePart) {
         log.debug("file import for budgetId " + budgetId);
@@ -75,4 +80,14 @@ public class TransactionController {
             .onErrorResume(e -> Mono.just(new ResponseEntity<>("Failed to initiate import", HttpStatus.BAD_REQUEST)));
     }
 
+    @PutMapping("/categories")
+    public Mono<ResponseEntity<Void>> updateTransactionCategories(@PathVariable Long budgetId) {
+        log.debug("Updating categories for transactions under budgetId: {}", budgetId);
+        return transactionCategoriser.categorise(budgetId)
+            .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)))
+            .onErrorResume(e -> {
+                log.error("Failed to update categories for transactions under budgetId: {}", budgetId, e);
+                return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            });
+    }
 }

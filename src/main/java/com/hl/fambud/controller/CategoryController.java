@@ -15,7 +15,7 @@ import static com.hl.fambud.util.BudgetUtil.INVALID_CATEGORY_ID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${app.base-url}/categories")
+@RequestMapping("${app.base-url}/{budgetId}/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;

@@ -27,7 +27,7 @@ spring:
     locations: classpath:db.migration
     baseline-on-migrate: true
 app:
-  base-url: /api
+  base-url: /api/budgets
 
 logging:
   level:

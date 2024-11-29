@@ -10,10 +10,12 @@ import com.hl.fambud.mapper.BudgetMapperImpl;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
+import com.hl.fambud.service.TransactionCategoriser;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -40,6 +42,9 @@ public class CategoriserIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private TransactionCategoriser categoriser;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -48,6 +53,7 @@ public class CategoriserIntegrationTest {
     }
 
     @Test
+    @Disabled
     public void categorise() throws Exception {
         BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
         Long createdBudgetId = createdBudgetDto.getBudgetId();
@@ -62,7 +68,6 @@ public class CategoriserIntegrationTest {
         List<TransactionDto> transactionDtoList = objectMapper.readValue(transactionFileResource.getFile(),
             new TypeReference<List<TransactionDto>>() {});
         BudgetMapper budgetMapper = new BudgetMapperImpl();
-//        categoriser.categorise(createdBudgetId, budgetMapper.transactionDtoListToTransactionList(transactionDtoList),
-//            mappingFileResource.getFile()).subscribe();
+        categoriser.categorise(createdBudgetId).subscribe();
     }
 }

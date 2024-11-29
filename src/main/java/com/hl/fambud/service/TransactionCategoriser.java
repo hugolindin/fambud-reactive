@@ -61,19 +61,20 @@ public class TransactionCategoriser {
                         return Flux.fromIterable(descriptionCategoryMap.entrySet())
                             .filter(entry -> description.toLowerCase().contains(entry.getKey().toLowerCase()))
                             .next()
-                            .map(entry -> {
+                            .flatMap(entry -> {
                                 String mappingCategoryName = entry.getValue();
                                 Long categoryId = categoryMap.get(mappingCategoryName);
                                 if (categoryId != null) {
                                     log.trace("transaction " + transaction.getTransactionId() + " " + transaction.getDescription()
                                         + " category " + categoryId + " " + mappingCategoryName);
                                     transaction.setCategoryId(categoryId);
-                                    transactionRepository.save(transaction);
+                                    return transactionRepository.save(transaction);
                                 }
-                                return transaction;
+                                return Mono.just(transaction);
                             });
                     })
-                ).then();
+                )
+                .then();
         });
     }
 

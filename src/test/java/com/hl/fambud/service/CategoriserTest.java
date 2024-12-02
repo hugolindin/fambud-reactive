@@ -55,11 +55,9 @@ public class CategoriserTest {
         BudgetMapper budgetMapper = new BudgetMapperImpl();
         List<Category> categoryList = budgetMapper.categoryDtoListToCategoryList(categoryDtoList);
         System.out.println("categories: " + categoryList);
-        when(categoryRepository.findByBudgetId(BUDGET_ID)).thenReturn(Flux.fromIterable(categoryList));
         ClassPathResource transactionFileResource = new ClassPathResource("json/saved-transactions.json");
         List<Transaction> transactionList = objectMapper.readValue(transactionFileResource.getFile(),
             new TypeReference<List<Transaction>>() {});
-        when(transactionRepository.findByBudgetId(BUDGET_ID)).thenReturn(Flux.fromIterable(transactionList));
         categoriser.categorise(BUDGET_ID).subscribe();
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.File;
 import java.io.FileReader;
@@ -49,7 +50,13 @@ public class TransactionCategoriser {
         return Mono.fromCallable(() -> {
             ClassPathResource mappingFileResource = new ClassPathResource("transaction-category-mapping-241121.csv");
             return mappingFileResource.getFile();
-        }).flatMap(file -> {
+        })
+        .onErrorResume(e -> {
+            log.error("failed to get the category transaction mapping file", e);
+            return Mono.error(e);
+        })
+        .subscribeOn(Schedulers.boundedElastic())
+        .flatMap(file -> {
             Map<String, String> descriptionCategoryMap = loadMappingFile(file);
             log.debug("description to category map " + descriptionCategoryMap);
             Flux<Category> categories = categoryRepository.findByBudgetId(budgetId);
@@ -70,7 +77,7 @@ public class TransactionCategoriser {
                                     transaction.setCategoryId(categoryId);
                                     return transactionRepository.save(transaction);
                                 }
-                                return Mono.just(transaction);
+                                return Mono.empty();
                             });
                     })
                 )

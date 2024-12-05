@@ -1,6 +1,11 @@
 package com.hl.fambud.service;
 
+import com.hl.fambud.dto.TransactionDto;
+import com.hl.fambud.dto.reporting.CategorySummaryDto;
+import com.hl.fambud.dto.reporting.PeriodSummaryDto;
+import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.model.Category;
+import com.hl.fambud.model.Transaction;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +22,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +37,8 @@ public class TransactionCategoriser {
     private final CategoryRepository categoryRepository;
 
     private final TransactionRepository transactionRepository;
+
+    private final BudgetMapper budgetMapper;
 
     private Map<String, String> loadMappingFile(File mappingFile) {
         Map<String, String> resultMap = new ConcurrentHashMap<>();
@@ -85,4 +96,31 @@ public class TransactionCategoriser {
         });
     }
 
+    public Mono<PeriodSummaryDto> summariseCategoryTransactions(LocalDate startDate, LocalDate endDate) {
+        return transactionRepository.findByDateBetween(startDate, endDate)
+            .doOnNext(transaction -> log.debug("found transaction " + transaction))
+            .subscribeOn(Schedulers.boundedElastic())
+            .collect(Collectors.groupingBy(
+                Transaction::getCategoryId,
+                Collectors.reducing(BigDecimal.ZERO, Transaction::getAmount, BigDecimal::add) // This will work with BigDecimal
+            ))
+            .flatMap(categorySumMap ->
+                Flux.fromIterable(categorySumMap.entrySet())
+                    .flatMap(entry -> categoryRepository.findById(entry.getKey())
+                        .map(category -> new CategorySummaryDto(category.getName(), entry.getValue())))
+                    .collectList()
+                    .map(categorySumDtos -> {
+                        // Sorting categories by amount in descending order
+                        log.debug("categorySumDtos " + categorySumDtos);
+                        categorySumDtos.sort((e1, e2) -> e2.getAmount().compareTo(e1.getAmount()));
+                        // Creating PeriodSummaryDto and setting the values
+                        PeriodSummaryDto periodSummaryDto = new PeriodSummaryDto();
+                        periodSummaryDto.setStartDate(startDate);
+                        periodSummaryDto.setEndDate(endDate);
+                        periodSummaryDto.setCategories(categorySumDtos);
+                        log.debug("periodSummaryDto " + periodSummaryDto);
+                        return periodSummaryDto;
+                    })
+            );
+    }
 }

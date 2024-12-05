@@ -1,7 +1,6 @@
 package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
@@ -30,9 +29,7 @@ public class CategoryIntegrationTest {
 
     @BeforeEach
     public void init() {
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper = TestUtil.getObjectMapper();
     }
 
     @Test

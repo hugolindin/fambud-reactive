@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -30,7 +31,7 @@ public class Transaction {
 
     private String description;
 
-    private double amount;
+    private BigDecimal amount;
 
     private LocalDate date;
 

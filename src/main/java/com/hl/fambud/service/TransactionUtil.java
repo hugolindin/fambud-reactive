@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -107,10 +108,10 @@ public class TransactionUtil {
             String creditAmount = csvRecord.get("Credit Amount");
 
             if (!debitAmount.isEmpty()) {
-                transaction.setAmount(Double.parseDouble(debitAmount));
+                transaction.setAmount(new BigDecimal(debitAmount));
                 transaction.setType(TransactionType.EXPENSE);
             } else if (!creditAmount.isEmpty()) {
-                transaction.setAmount(Double.parseDouble(creditAmount));
+                transaction.setAmount(new BigDecimal(creditAmount));
                 transaction.setType(TransactionType.INCOME);
             }
 

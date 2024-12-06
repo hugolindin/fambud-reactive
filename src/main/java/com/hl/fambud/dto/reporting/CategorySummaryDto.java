@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CategorySummaryDto {
 
+    private Long categoryId;
     private String categoryName;
     private BigDecimal amount;
 }

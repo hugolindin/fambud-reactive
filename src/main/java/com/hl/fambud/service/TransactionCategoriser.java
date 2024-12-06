@@ -1,6 +1,5 @@
 package com.hl.fambud.service;
 
-import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.dto.reporting.CategorySummaryDto;
 import com.hl.fambud.dto.reporting.PeriodSummaryDto;
 import com.hl.fambud.mapper.BudgetMapper;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -96,8 +94,10 @@ public class TransactionCategoriser {
         });
     }
 
-    public Mono<PeriodSummaryDto> summariseCategoryTransactions(LocalDate startDate, LocalDate endDate) {
+    public Mono<PeriodSummaryDto> summariseCategoryTransactions(
+        Long budgetId, LocalDate startDate, LocalDate endDate) {
         return transactionRepository.findByDateBetween(startDate, endDate)
+            .filter(transaction -> transaction.getBudgetId().longValue() == budgetId)
             .doOnNext(transaction -> log.debug("found transaction " + transaction))
             .subscribeOn(Schedulers.boundedElastic())
             .collect(Collectors.groupingBy(
@@ -107,7 +107,8 @@ public class TransactionCategoriser {
             .flatMap(categorySumMap ->
                 Flux.fromIterable(categorySumMap.entrySet())
                     .flatMap(entry -> categoryRepository.findById(entry.getKey())
-                        .map(category -> new CategorySummaryDto(category.getName(), entry.getValue())))
+                        .map(category -> new CategorySummaryDto(
+                            category.getCategoryId(), category.getName(), entry.getValue())))
                     .collectList()
                     .map(categorySumDtos -> {
                         // Sorting categories by amount in descending order

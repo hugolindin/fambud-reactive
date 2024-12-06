@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.dto.TransactionDto;
+import com.hl.fambud.dto.reporting.CategorySummaryDto;
 import com.hl.fambud.dto.reporting.PeriodSummaryDto;
 import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.mapper.BudgetMapperImpl;
@@ -26,10 +27,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -61,32 +63,31 @@ public class CategoriserIntegrationTest {
     @Test
     @Disabled
     public void categorise() throws Exception {
-        BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
-        Long createdBudgetId = createdBudgetDto.getBudgetId();
-        List<CategoryDto> categoryDtoList = TestDataGenerator.getCategoryDtosFromJsonFile();
-        categoryDtoList.forEach(categoryDto -> {
-            categoryDto.setCategoryId(null);
-            categoryDto.setBudgetId(createdBudgetId);
-            CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, createdBudgetId, categoryDto);
-            log.debug("created category " + createdCategoryDto);
-        });
-        ClassPathResource transactionFileResource = new ClassPathResource("json/categorisation-test-transactions.json");
-        List<TransactionDto> transactionDtoList = objectMapper.readValue(transactionFileResource.getFile(),
-            new TypeReference<List<TransactionDto>>() {});
-        BudgetMapper budgetMapper = new BudgetMapperImpl();
-        categoriser.categorise(createdBudgetId).subscribe();
+        Map<Long, BigDecimal> categoryAmountMap = new HashMap<>();
+        categoriser.categorise(createTestData(
+            "json/categorisation-test-transactions.json", categoryAmountMap))
+            .subscribe();
     }
 
     @Test
     public void categoryTransactionSummary() throws Exception {
         LocalDate startDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 12, 31);
-        createTestData("json/saved-transactions.json");
-        PeriodSummaryDto summary = categoriser.summariseCategoryTransactions(startDate, endDate).block();
-        log.info(objectMapper.writeValueAsString(summary));
+        Map<Long, BigDecimal> categoryAmountMap = new HashMap<>();
+        Long createdBudgetId = createTestData("json/categorised-transactions.json", categoryAmountMap);
+        PeriodSummaryDto summary = categoriser.summariseCategoryTransactions(createdBudgetId, startDate, endDate).block();
+        log.debug(objectMapper.writeValueAsString(summary));
+        log.debug(objectMapper.writeValueAsString(categoryAmountMap));
+        List<CategorySummaryDto> categorySummaries = summary.getCategories();
+        categorySummaries.forEach(categorySummary -> {
+            BigDecimal expectedAmount = categoryAmountMap.get(categorySummary.getCategoryId());
+            BigDecimal calculatedAmount = categorySummary.getAmount();
+            log.debug("expected " + expectedAmount + " calculated " + calculatedAmount);
+            assertEquals(expectedAmount, calculatedAmount);
+        });
     }
 
-    private void createTestData(String transactionDataFileName) throws IOException {
+    private Long createTestData(String transactionDataFileName, Map<Long, BigDecimal> categoryAmountMap) throws IOException {
         BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
         Long createdBudgetId = createdBudgetDto.getBudgetId();
         List<CategoryDto> categoryDtoList = TestDataGenerator.getCategoryDtosFromJsonFile();
@@ -95,7 +96,7 @@ public class CategoriserIntegrationTest {
             categoryDto.setCategoryId(null);
             categoryDto.setBudgetId(createdBudgetId);
             CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, createdBudgetId, categoryDto);
-            log.debug("created category " + createdCategoryDto);
+            log.trace("created category " + createdCategoryDto);
             categoryIds.add(createdCategoryDto.getCategoryId());
         });
         log.debug("categoryIds " + categoryIds);
@@ -109,8 +110,15 @@ public class CategoriserIntegrationTest {
             transactionDto.setCategoryId(categoryIds.get(random.nextInt(categoryIds.size())));
             transactionDto.setTransactionId(null);
             Transaction savedTransaction = transactionRepository.save(budgetMapper.toTransaction(transactionDto)).block();
-            log.debug("created transaction " + savedTransaction);
+            log.trace("created transaction " + savedTransaction);
+            Long categoryId = transactionDto.getCategoryId();
+            BigDecimal amount = transactionDto.getAmount();
+            if (categoryAmountMap.containsKey(categoryId)) {
+                categoryAmountMap.put(categoryId, categoryAmountMap.get(categoryId).add(amount));
+            } else {
+                categoryAmountMap.put(categoryId, amount);
+            }
         });
-
+        return createdBudgetId;
     }
 }

@@ -1,0 +1,90 @@
+{
+  "startDate" : [ 2024, 1, 1 ],
+  "endDate" : [ 2024, 12, 31 ],
+  "categories" : [ {
+    "categoryId" : 7,
+    "categoryName" : "Fitness",
+    "amount" : 6790.16
+  }, {
+    "categoryId" : 2,
+    "categoryName" : "Utilities",
+    "amount" : 6441.53
+  }, {
+    "categoryId" : 4,
+    "categoryName" : "Clothing",
+    "amount" : 6404.72
+  }, {
+    "categoryId" : 16,
+    "categoryName" : "Hair",
+    "amount" : 4495.38
+  }, {
+    "categoryId" : 11,
+    "categoryName" : "Work Food",
+    "amount" : 4426.62
+  }, {
+    "categoryId" : 6,
+    "categoryName" : "Insurance",
+    "amount" : 4378.19
+  }, {
+    "categoryId" : 20,
+    "categoryName" : "Lotteries",
+    "amount" : 4250.79
+  }, {
+    "categoryId" : 10,
+    "categoryName" : "Public Transport",
+    "amount" : 4021.73
+  }, {
+    "categoryId" : 15,
+    "categoryName" : "Cleaners",
+    "amount" : 3771.98
+  }, {
+    "categoryId" : 13,
+    "categoryName" : "Dining",
+    "amount" : 3666.75
+  }, {
+    "categoryId" : 5,
+    "categoryName" : "Healthcare",
+    "amount" : 3500.19
+  }, {
+    "categoryId" : 19,
+    "categoryName" : "Household",
+    "amount" : 3367.24
+  }, {
+    "categoryId" : 21,
+    "categoryName" : "Taxi",
+    "amount" : 3014.86
+  }, {
+    "categoryId" : 9,
+    "categoryName" : "Entertainment",
+    "amount" : 2837.92
+  }, {
+    "categoryId" : 3,
+    "categoryName" : "Schooling",
+    "amount" : 2770.66
+  }, {
+    "categoryId" : 1,
+    "categoryName" : "Mortgage",
+    "amount" : 2657.25
+  }, {
+    "categoryId" : 14,
+    "categoryName" : "Streaming",
+    "amount" : 2648.34
+  }, {
+    "categoryId" : 17,
+    "categoryName" : "Garden",
+    "amount" : 2647.84
+  }, {
+    "categoryId" : 8,
+    "categoryName" : "Car",
+    "amount" : 2609.35
+  }, {
+    "categoryId" : 12,
+    "categoryName" : "Groceries",
+    "amount" : 2244.50
+  }, {
+    "categoryId" : 18,
+    "categoryName" : "Work",
+    "amount" : 1645.66
+  } ],
+  "incomeCategories" : null
+}

@@ -77,10 +77,8 @@ public class TransactionUtil {
             .subscribeOn(parallelScheduler)
             .flatMapMany(inputStream -> {
                 try (Reader reader = new InputStreamReader(inputStream);
-                     CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
-
+                    CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
                     List<CSVRecord> records = csvParser.getRecords();
-
                     // Process records in parallel using Flux from a list
                     return Flux.fromIterable(records)
                         .parallel()
@@ -114,6 +112,8 @@ public class TransactionUtil {
                 transaction.setAmount(new BigDecimal(creditAmount));
                 transaction.setType(TransactionType.INCOME);
             }
+            if (transaction.getDescription().contains("TFR"))
+                transaction.setType(TransactionType.MOVE);
 
             return Mono.just(transaction);
         } catch (Exception e) {

@@ -29,5 +29,5 @@ CREATE TABLE transactions (
     description VARCHAR(500) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     date DATE NOT NULL,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('INCOME', 'EXPENSE'))
+    type VARCHAR(50) NOT NULL CHECK (type IN ('INCOME', 'EXPENSE', 'MOVE'))
 );

@@ -1075,7 +1075,7 @@
       10,
       28
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 82,
@@ -1117,7 +1117,7 @@
       10,
       21
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 97,
@@ -1131,7 +1131,7 @@
       10,
       16
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 600,
@@ -1201,7 +1201,7 @@
       9,
       16
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 387,
@@ -1243,7 +1243,7 @@
       7,
       29
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 432,
@@ -1313,7 +1313,7 @@
       7,
       12
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 861,
@@ -1495,7 +1495,7 @@
       4,
       8
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1010,
@@ -3637,7 +3637,7 @@
       9,
       20
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 188,
@@ -4407,7 +4407,7 @@
       7,
       22
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 357,
@@ -4435,7 +4435,7 @@
       5,
       3
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 367,
@@ -4449,7 +4449,7 @@
       4,
       23
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 562,
@@ -4463,7 +4463,7 @@
       10,
       1
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1162,
@@ -4547,7 +4547,7 @@
       10,
       4
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 218,
@@ -4603,7 +4603,7 @@
       4,
       2
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 473,
@@ -5499,7 +5499,7 @@
       3,
       5
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 523,
@@ -5513,7 +5513,7 @@
       8,
       5
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 982,
@@ -5541,7 +5541,7 @@
       3,
       18
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1164,
@@ -6409,7 +6409,7 @@
       8,
       19
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 295,
@@ -6997,7 +6997,7 @@
       9,
       10
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 213,
@@ -7067,7 +7067,7 @@
       9,
       2
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 252,
@@ -7095,7 +7095,7 @@
       8,
       26
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 273,
@@ -7851,7 +7851,7 @@
       2,
       28
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 417,
@@ -7893,7 +7893,7 @@
       8,
       9
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 510,
@@ -7935,7 +7935,7 @@
       6,
       20
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 677,
@@ -8005,7 +8005,7 @@
       5,
       16
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 803,
@@ -8047,7 +8047,7 @@
       5,
       13
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 375,
@@ -8901,7 +8901,7 @@
       5,
       30
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 898,
@@ -9601,7 +9601,7 @@
       6,
       7
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 475,
@@ -9671,7 +9671,7 @@
       6,
       13
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 624,
@@ -9755,7 +9755,7 @@
       6,
       17
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 718,
@@ -9783,7 +9783,7 @@
       5,
       27
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 817,
@@ -9811,7 +9811,7 @@
       1,
       29
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1236,
@@ -10441,7 +10441,7 @@
       3,
       11
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 628,
@@ -10483,7 +10483,7 @@
       2,
       6
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 730,
@@ -10581,7 +10581,7 @@
       3,
       20
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 618,
@@ -10637,7 +10637,7 @@
       7,
       3
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 642,
@@ -10665,7 +10665,7 @@
       6,
       3
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 656,
@@ -10679,7 +10679,7 @@
       6,
       28
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 696,
@@ -10819,7 +10819,7 @@
       1,
       2
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 486,
@@ -10833,7 +10833,7 @@
       4,
       29
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 531,
@@ -11547,7 +11547,7 @@
       7,
       24
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 795,
@@ -12177,7 +12177,7 @@
       4,
       22
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 890,
@@ -12261,7 +12261,7 @@
       2,
       19
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1093,
@@ -12275,7 +12275,7 @@
       3,
       25
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1119,
@@ -13059,7 +13059,7 @@
       4,
       26
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1069,
@@ -13185,7 +13185,7 @@
       4,
       16
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1047,
@@ -13213,7 +13213,7 @@
       3,
       14
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1065,
@@ -13941,7 +13941,7 @@
       1,
       22
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1183,
@@ -14781,7 +14781,7 @@
       1,
       5
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1206,
@@ -15649,7 +15649,7 @@
       5,
       20
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 928,
@@ -15761,7 +15761,7 @@
       1,
       15
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1153,
@@ -15775,7 +15775,7 @@
       2,
       21
     ],
-    "type": "INCOME"
+    "type": "MOVE"
   },
   {
     "transactionId": 1171,

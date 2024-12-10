@@ -5,6 +5,7 @@ import com.hl.fambud.dto.reporting.PeriodSummaryDto;
 import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.model.Category;
 import com.hl.fambud.model.Transaction;
+import com.hl.fambud.model.TransactionType;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -37,22 +39,6 @@ public class TransactionCategoriser {
     private final TransactionRepository transactionRepository;
 
     private final BudgetMapper budgetMapper;
-
-    private Map<String, String> loadMappingFile(File mappingFile) {
-        Map<String, String> resultMap = new ConcurrentHashMap<>();
-        try (Reader reader = new FileReader(mappingFile);
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT)) {
-            // Load records in parallel
-            csvParser.getRecords().parallelStream().forEach(record -> {
-                String key = record.get(0);
-                String value = record.get(1);
-                resultMap.put(key, value);
-            });
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading mapping file", e);
-        }
-        return resultMap;
-    }
 
     public Mono<Void> categorise(Long budgetId) {
         log.debug("categorise transactions for budget " + budgetId);
@@ -94,34 +80,58 @@ public class TransactionCategoriser {
         });
     }
 
-    public Mono<PeriodSummaryDto> summariseCategoryTransactions(
-        Long budgetId, LocalDate startDate, LocalDate endDate) {
+    public Mono<PeriodSummaryDto> getBudgetPeriodSummary(Long budgetId, LocalDate startDate, LocalDate endDate) {
+        Mono<List<CategorySummaryDto>> expenseSummaries = summariseCategoryTransactions(
+            budgetId, startDate, endDate, TransactionType.EXPENSE);
+        Mono<List<CategorySummaryDto>> incomeSummaries = summariseCategoryTransactions(
+            budgetId, startDate, endDate, TransactionType.INCOME);
+        return Mono.zip(expenseSummaries, incomeSummaries)
+            .map(tuple -> {
+                List<CategorySummaryDto> expenses = tuple.getT1();
+                List<CategorySummaryDto> incomes = tuple.getT2();
+                PeriodSummaryDto periodSummaryDto = new PeriodSummaryDto();
+                periodSummaryDto.setStartDate(startDate);
+                periodSummaryDto.setEndDate(endDate);
+                periodSummaryDto.setExpenseCategories(expenses);
+                periodSummaryDto.setIncomeCategories(incomes);
+                log.debug("expenses " + expenses);
+                log.debug("incomes " + incomes);
+                return periodSummaryDto;
+            });
+    }
+
+    public Mono<List<CategorySummaryDto>> summariseCategoryTransactions(
+        Long budgetId, LocalDate startDate, LocalDate endDate, TransactionType transactionType) {
         return transactionRepository.findByDateBetween(startDate, endDate)
-            .filter(transaction -> transaction.getBudgetId().longValue() == budgetId)
-            .doOnNext(transaction -> log.debug("found transaction " + transaction))
+            .filter(transaction ->
+                transaction.getBudgetId().longValue() == budgetId && transaction.getType() == transactionType)
+            .doOnNext(transaction -> log.trace("found transaction " + transaction))
             .subscribeOn(Schedulers.boundedElastic())
             .collect(Collectors.groupingBy(
                 Transaction::getCategoryId,
-                Collectors.reducing(BigDecimal.ZERO, Transaction::getAmount, BigDecimal::add) // This will work with BigDecimal
+                Collectors.reducing(BigDecimal.ZERO, Transaction::getAmount, BigDecimal::add)
             ))
             .flatMap(categorySumMap ->
                 Flux.fromIterable(categorySumMap.entrySet())
                     .flatMap(entry -> categoryRepository.findById(entry.getKey())
                         .map(category -> new CategorySummaryDto(
                             category.getCategoryId(), category.getName(), entry.getValue())))
-                    .collectList()
-                    .map(categorySumDtos -> {
-                        // Sorting categories by amount in descending order
-                        log.debug("categorySumDtos " + categorySumDtos);
-                        categorySumDtos.sort((e1, e2) -> e2.getAmount().compareTo(e1.getAmount()));
-                        // Creating PeriodSummaryDto and setting the values
-                        PeriodSummaryDto periodSummaryDto = new PeriodSummaryDto();
-                        periodSummaryDto.setStartDate(startDate);
-                        periodSummaryDto.setEndDate(endDate);
-                        periodSummaryDto.setCategories(categorySumDtos);
-                        log.debug("periodSummaryDto " + periodSummaryDto);
-                        return periodSummaryDto;
-                    })
-            );
+                    .collectList());
+    }
+
+    private Map<String, String> loadMappingFile(File mappingFile) {
+        Map<String, String> resultMap = new ConcurrentHashMap<>();
+        try (Reader reader = new FileReader(mappingFile);
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT)) {
+            // Load records in parallel
+            csvParser.getRecords().parallelStream().forEach(record -> {
+                String key = record.get(0);
+                String value = record.get(1);
+                resultMap.put(key, value);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading mapping file", e);
+        }
+        return resultMap;
     }
 }

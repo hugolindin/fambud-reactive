@@ -36,4 +36,4 @@ logging:
     org.springframework.data: INFO
     org.springframework.r2dbc: INFO
     io.r2dbc: INFO
-    com.hl.fambud: DEBUG
+    com.hl.fambud: INFO

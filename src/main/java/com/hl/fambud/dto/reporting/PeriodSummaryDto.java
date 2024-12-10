@@ -16,5 +16,6 @@ public class PeriodSummaryDto {
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private List<CategorySummaryDto> categories;
+    private List<CategorySummaryDto> expenseCategories;
+    private List<CategorySummaryDto> incomeCategories;
 }

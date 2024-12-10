@@ -25,6 +25,7 @@ public class BudgetController {
 
     @PostMapping
     public Mono<ResponseEntity<BudgetDto>> createBudget(@Valid @RequestBody BudgetDto budgetDto) {
+        log.info("creating budget " + budgetDto);
         return budgetService.createBudget(budgetDto)
             .map(budget -> new ResponseEntity<>(budget, HttpStatus.CREATED))
             .onErrorResume(exception -> {
@@ -38,6 +39,7 @@ public class BudgetController {
         /*if (budgetId == null || budgetId <= 0) {
             throw new InvalidPathVariableException(INVALID_BUDGET_ID + ": " + budgetId);
         }*/
+        log.info("getting budget " + budgetId);
         return budgetService.getBudget(budgetId)
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -45,6 +47,7 @@ public class BudgetController {
 
     @GetMapping
     public Flux<BudgetDto> getAllBudgets() {
+        log.info("getting all budgets");
         return budgetService.getAllBudgets();
     }
 
@@ -54,6 +57,7 @@ public class BudgetController {
         if (budgetId == null || budgetId <= 0) {
             throw new InvalidPathVariableException(INVALID_BUDGET_ID + budgetId);
         }
+        log.info("updating budget " + budgetDto);
         return budgetService.updateBudget(budgetId, budgetDto)
             .map(ResponseEntity::ok)
             .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -64,6 +68,7 @@ public class BudgetController {
         if (budgetId == null || budgetId <= 0) {
             throw new InvalidPathVariableException(INVALID_BUDGET_ID + ": " + budgetId);
         }
+        log.info("deleting budget " + budgetId);
         return budgetService.deleteBudget(budgetId)
             .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
             .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));

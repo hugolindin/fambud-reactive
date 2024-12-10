@@ -10,6 +10,7 @@ import com.hl.fambud.dto.reporting.PeriodSummaryDto;
 import com.hl.fambud.mapper.BudgetMapper;
 import com.hl.fambud.mapper.BudgetMapperImpl;
 import com.hl.fambud.model.Transaction;
+import com.hl.fambud.model.TransactionType;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
@@ -63,31 +64,42 @@ public class CategoriserIntegrationTest {
     @Test
     @Disabled
     public void categorise() throws Exception {
-        Map<Long, BigDecimal> categoryAmountMap = new HashMap<>();
+        Map<String, BigDecimal> categoryAmountMap = new HashMap<>();
         categoriser.categorise(createTestData(
             "json/categorisation-test-transactions.json", categoryAmountMap))
-            .subscribe();
+            .block();
     }
 
     @Test
     public void categoryTransactionSummary() throws Exception {
         LocalDate startDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 12, 31);
-        Map<Long, BigDecimal> categoryAmountMap = new HashMap<>();
-        Long createdBudgetId = createTestData("json/categorised-transactions.json", categoryAmountMap);
-        PeriodSummaryDto summary = categoriser.summariseCategoryTransactions(createdBudgetId, startDate, endDate).block();
+        Map<String, BigDecimal> categoryAmountMap = new HashMap<>();
+        Long createdBudgetId = createTestData(
+            "json/categorised-transactions.json", categoryAmountMap);
+        PeriodSummaryDto summary = categoriser.getBudgetPeriodSummary(createdBudgetId, startDate, endDate)
+            .block();
         log.debug(objectMapper.writeValueAsString(summary));
         log.debug(objectMapper.writeValueAsString(categoryAmountMap));
-        List<CategorySummaryDto> categorySummaries = summary.getCategories();
-        categorySummaries.forEach(categorySummary -> {
-            BigDecimal expectedAmount = categoryAmountMap.get(categorySummary.getCategoryId());
+        List<CategorySummaryDto> expenseSummaries = summary.getExpenseCategories();
+        expenseSummaries.forEach(categorySummary -> {
+            var categorySummaryKey = TransactionType.EXPENSE + "-" + categorySummary.getCategoryId();
+            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
             BigDecimal calculatedAmount = categorySummary.getAmount();
-            log.debug("expected " + expectedAmount + " calculated " + calculatedAmount);
+            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
+            assertEquals(expectedAmount, calculatedAmount);
+        });
+        List<CategorySummaryDto> incomeSummaries = summary.getIncomeCategories();
+        incomeSummaries.forEach(categorySummary -> {
+            var categorySummaryKey = TransactionType.INCOME + "-" + categorySummary.getCategoryId();
+            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
+            BigDecimal calculatedAmount = categorySummary.getAmount();
+            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
             assertEquals(expectedAmount, calculatedAmount);
         });
     }
 
-    private Long createTestData(String transactionDataFileName, Map<Long, BigDecimal> categoryAmountMap) throws IOException {
+    private Long createTestData(String transactionDataFileName, Map<String, BigDecimal> categoryAmountMap) throws IOException {
         BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
         Long createdBudgetId = createdBudgetDto.getBudgetId();
         List<CategoryDto> categoryDtoList = TestDataGenerator.getCategoryDtosFromJsonFile();
@@ -96,7 +108,7 @@ public class CategoriserIntegrationTest {
             categoryDto.setCategoryId(null);
             categoryDto.setBudgetId(createdBudgetId);
             CategoryDto createdCategoryDto = TestUtil.postCategory(webTestClient, createdBudgetId, categoryDto);
-            log.trace("created category " + createdCategoryDto);
+            log.debug("created category " + createdCategoryDto);
             categoryIds.add(createdCategoryDto.getCategoryId());
         });
         log.debug("categoryIds " + categoryIds);
@@ -109,14 +121,17 @@ public class CategoriserIntegrationTest {
             transactionDto.setBudgetId(createdBudgetId);
             transactionDto.setCategoryId(categoryIds.get(random.nextInt(categoryIds.size())));
             transactionDto.setTransactionId(null);
-            Transaction savedTransaction = transactionRepository.save(budgetMapper.toTransaction(transactionDto)).block();
+            Transaction savedTransaction = transactionRepository.save(budgetMapper.toTransaction(transactionDto))
+                .block();
             log.trace("created transaction " + savedTransaction);
             Long categoryId = transactionDto.getCategoryId();
             BigDecimal amount = transactionDto.getAmount();
-            if (categoryAmountMap.containsKey(categoryId)) {
-                categoryAmountMap.put(categoryId, categoryAmountMap.get(categoryId).add(amount));
+            TransactionType transactionType = transactionDto.getType();
+            var mapKey = transactionType + "-" + categoryId;
+            if (categoryAmountMap.containsKey(mapKey)) {
+                categoryAmountMap.put(mapKey, categoryAmountMap.get(mapKey).add(amount));
             } else {
-                categoryAmountMap.put(categoryId, amount);
+                categoryAmountMap.put(mapKey, amount);
             }
         });
         return createdBudgetId;

@@ -70,9 +70,7 @@ public class TransactionService {
 
     public Mono<String> startCsvImport(Long budgetId, FilePart filePart) {
         String importJobId = UUID.randomUUID().toString();
-
         log.info("Import job {} started with status: IN_PROGRESS", importJobId);
-
         return TransactionUtil.convertToMultipartFile(parallelScheduler, filePart)
             .flatMapMany(multipartFile -> TransactionUtil.parseCsvFile(parallelScheduler, budgetId, multipartFile))
             .flatMap(transaction -> {

@@ -1,17 +1,22 @@
 package com.hl.fambud.controller;
 
 import com.hl.fambud.dto.BudgetDto;
+import com.hl.fambud.dto.reporting.PeriodSummaryDto;
 import com.hl.fambud.exception.InvalidPathVariableException;
 import com.hl.fambud.service.BudgetService;
+import com.hl.fambud.service.TransactionCategoriser;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
 
 import static com.hl.fambud.util.BudgetUtil.INVALID_BUDGET_ID;
 
@@ -22,6 +27,7 @@ public class BudgetController {
 
     private static final Logger log = LoggerFactory.getLogger(BudgetController.class);
     private final BudgetService budgetService;
+    private final TransactionCategoriser transactionCategoriser;
 
     @PostMapping
     public Mono<ResponseEntity<BudgetDto>> createBudget(@Valid @RequestBody BudgetDto budgetDto) {
@@ -49,6 +55,20 @@ public class BudgetController {
     public Flux<BudgetDto> getAllBudgets() {
         log.info("getting all budgets");
         return budgetService.getAllBudgets();
+    }
+
+    @GetMapping("/{budgetId}/summaries")
+    public Mono<ResponseEntity<PeriodSummaryDto>> getPeriodSummaries(
+        @PathVariable Long budgetId,
+        @RequestParam("startDate") @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate startDate,
+        @RequestParam("endDate") @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate endDate) {
+        log.info("getting period summary " + budgetId + " " + startDate + " " + endDate);
+        return transactionCategoriser.getBudgetPeriodSummary(budgetId, startDate, endDate)
+            .map(summary -> new ResponseEntity<>(summary, HttpStatus.OK))
+            .onErrorResume(exception -> {
+                log.error("Error while getting period summary", exception);
+                return Mono.just(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+            });
     }
 
     @PutMapping("/{budgetId}")

@@ -1,5 +1,6 @@
 package com.hl.fambud.integration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hl.fambud.dto.BudgetDto;
@@ -71,32 +72,36 @@ public class CategoriserIntegrationTest {
     }
 
     @Test
-    public void categoryTransactionSummary() throws Exception {
-        LocalDate startDate = LocalDate.of(2024, 1, 1);
-        LocalDate endDate = LocalDate.of(2024, 12, 31);
+    public void servicePeriodSummary() throws Exception {
         Map<String, BigDecimal> categoryAmountMap = new HashMap<>();
         Long createdBudgetId = createTestData(
             "json/categorised-transactions.json", categoryAmountMap);
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 12, 31);
         PeriodSummaryDto summary = categoriser.getBudgetPeriodSummary(createdBudgetId, startDate, endDate)
             .block();
-        log.debug(objectMapper.writeValueAsString(summary));
-        log.debug(objectMapper.writeValueAsString(categoryAmountMap));
-        List<CategorySummaryDto> expenseSummaries = summary.getExpenseCategories();
-        expenseSummaries.forEach(categorySummary -> {
-            var categorySummaryKey = TransactionType.EXPENSE + "-" + categorySummary.getCategoryId();
-            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
-            BigDecimal calculatedAmount = categorySummary.getAmount();
-            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
-            assertEquals(expectedAmount, calculatedAmount);
-        });
-        List<CategorySummaryDto> incomeSummaries = summary.getIncomeCategories();
-        incomeSummaries.forEach(categorySummary -> {
-            var categorySummaryKey = TransactionType.INCOME + "-" + categorySummary.getCategoryId();
-            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
-            BigDecimal calculatedAmount = categorySummary.getAmount();
-            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
-            assertEquals(expectedAmount, calculatedAmount);
-        });
+        assertPeriodSummary(summary, categoryAmountMap);
+    }
+
+    @Test
+    public void controllerPeriodSummary() throws Exception{
+        Map<String, BigDecimal> categoryAmountMap = new HashMap<>();
+        Long budgetId = createTestData(
+            "json/categorised-transactions.json", categoryAmountMap);
+        PeriodSummaryDto summaryDto = webTestClient
+            .get()
+            .uri(uriBuilder -> uriBuilder
+                .path(TestDataGenerator.BUDGET_SUMMARY_URL)
+                .queryParam("startDate", "01-01-2024")
+                .queryParam("endDate", "31-12-2024")
+                .build(budgetId))
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(PeriodSummaryDto.class)
+            .returnResult()
+            .getResponseBody();
+        assertPeriodSummary(summaryDto, categoryAmountMap);
     }
 
     private Long createTestData(String transactionDataFileName, Map<String, BigDecimal> categoryAmountMap) throws IOException {
@@ -135,5 +140,27 @@ public class CategoriserIntegrationTest {
             }
         });
         return createdBudgetId;
+    }
+
+    private void assertPeriodSummary(
+        PeriodSummaryDto summary, Map<String, BigDecimal> categoryAmountMap) throws JsonProcessingException {
+        log.debug(objectMapper.writeValueAsString(summary));
+        log.debug(objectMapper.writeValueAsString(categoryAmountMap));
+        List<CategorySummaryDto> expenseSummaries = summary.getExpenseCategories();
+        expenseSummaries.forEach(categorySummary -> {
+            var categorySummaryKey = TransactionType.EXPENSE + "-" + categorySummary.getCategoryId();
+            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
+            BigDecimal calculatedAmount = categorySummary.getAmount();
+            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
+            assertEquals(expectedAmount, calculatedAmount);
+        });
+        List<CategorySummaryDto> incomeSummaries = summary.getIncomeCategories();
+        incomeSummaries.forEach(categorySummary -> {
+            var categorySummaryKey = TransactionType.INCOME + "-" + categorySummary.getCategoryId();
+            BigDecimal expectedAmount = categoryAmountMap.get(categorySummaryKey);
+            BigDecimal calculatedAmount = categorySummary.getAmount();
+            log.debug(categorySummaryKey + " expected " + expectedAmount + " calculated " + calculatedAmount);
+            assertEquals(expectedAmount, calculatedAmount);
+        });
     }
 }

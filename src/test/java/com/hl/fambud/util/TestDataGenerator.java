@@ -20,6 +20,7 @@ public class TestDataGenerator {
 
     public final static String BUDGET_BASE_URL = "/api/budgets";
     public final static String BUDGET_ID_URL = BUDGET_BASE_URL + "/{budgetId}";
+    public final static String BUDGET_SUMMARY_URL = BUDGET_ID_URL + "/summaries";
     public final static String CATEGORY_BASE_URL = BUDGET_ID_URL + "/categories";
     public final static String CATEGORY_ID_URL = CATEGORY_BASE_URL + "/{categoryId}";
     public final static String TRANSACTION_BASE_URL = BUDGET_ID_URL + "/transactions";

@@ -116,8 +116,9 @@ public class TransactionCategoriser {
     public Mono<List<CategorySummaryDto>> summariseCategoryTransactions(
         Long budgetId, LocalDate startDate, LocalDate endDate, TransactionType transactionType) {
         return transactionRepository.findByDateBetween(startDate, endDate)
-            .filter(transaction ->
-                transaction.getBudgetId().longValue() == budgetId && transaction.getType() == transactionType)
+            .filter(transaction -> transaction.getBudgetId().longValue() == budgetId
+                && transaction.getType() == transactionType
+                && transaction.getCategoryId() != null)
             .doOnNext(transaction -> log.trace("found transaction " + transaction))
             .subscribeOn(Schedulers.boundedElastic())
             .collect(Collectors.groupingBy(

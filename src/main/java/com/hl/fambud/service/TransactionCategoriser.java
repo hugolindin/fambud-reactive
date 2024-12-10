@@ -94,10 +94,23 @@ public class TransactionCategoriser {
                 periodSummaryDto.setEndDate(endDate);
                 periodSummaryDto.setExpenseCategories(expenses);
                 periodSummaryDto.setIncomeCategories(incomes);
-                log.debug("expenses " + expenses);
-                log.debug("incomes " + incomes);
+                setTotals(periodSummaryDto);
+                log.debug("summary " + periodSummaryDto);
                 return periodSummaryDto;
             });
+    }
+
+    private void setTotals(PeriodSummaryDto periodSummaryDto) {
+        BigDecimal totalExpenses = periodSummaryDto.getExpenseCategories().stream()
+            .map(CategorySummaryDto::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalIncome = periodSummaryDto.getIncomeCategories().stream()
+            .map(CategorySummaryDto::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal surplus = totalIncome.subtract(totalExpenses);
+        periodSummaryDto.setTotalExpenses(totalExpenses);
+        periodSummaryDto.setTotalIncome(totalIncome);
+        periodSummaryDto.setSurplus(surplus);
     }
 
     public Mono<List<CategorySummaryDto>> summariseCategoryTransactions(

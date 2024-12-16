@@ -42,8 +42,8 @@ public class CategoryService {
             .switchIfEmpty(Mono.error(new EntityNotFoundException("Category not found with id: " + categoryId)));
     }
 
-    public Flux<CategoryDto> getAllCategories() {
-        return categoryRepository.findAll()
+    public Flux<CategoryDto> getAllCategoriesForBudget(Long budgetId) {
+        return categoryRepository.findByBudgetId(budgetId)
             .doOnError(exception -> log.error("Unable to get all categories", exception))
             .map(budgetMapper::categoryToCategoryDto);
     }

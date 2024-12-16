@@ -34,8 +34,8 @@ public class CategoryController {
     }
 
     @GetMapping
-    public Flux<CategoryDto> getAllCategories() {
-        return categoryService.getAllCategories();
+    public Flux<CategoryDto> getAllCategories(@PathVariable Long budgetId) {
+        return categoryService.getAllCategoriesForBudget(budgetId);
     }
 
     @PutMapping("/{categoryId}")

@@ -113,7 +113,7 @@ public class TransactionCategoriser {
         periodSummaryDto.setSurplus(surplus);
     }
 
-    public Mono<List<CategorySummaryDto>> summariseCategoryTransactions(
+    private Mono<List<CategorySummaryDto>> summariseCategoryTransactions(
         Long budgetId, LocalDate startDate, LocalDate endDate, TransactionType transactionType) {
         return transactionRepository.findByDateBetween(startDate, endDate)
             .filter(transaction -> transaction.getBudgetId().longValue() == budgetId
@@ -130,6 +130,7 @@ public class TransactionCategoriser {
                     .flatMap(entry -> categoryRepository.findById(entry.getKey())
                         .map(category -> new CategorySummaryDto(
                             category.getCategoryId(), category.getName(), entry.getValue())))
+                    .sort((e1, e2) -> e2.getAmount().compareTo(e1.getAmount()))
                     .collectList());
     }
 

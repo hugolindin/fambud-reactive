@@ -21,7 +21,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public Mono<ResponseEntity<CategoryDto>> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
+    public Mono<ResponseEntity<CategoryDto>> createCategory(@PathVariable Long budgetId, @Valid @RequestBody CategoryDto categoryDto) {
+        categoryDto.setBudgetId(budgetId);
         return categoryService.createCategory(categoryDto)
             .map(category -> new ResponseEntity<>(category, HttpStatus.CREATED));
     }

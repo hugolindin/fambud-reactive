@@ -15,6 +15,7 @@ import reactor.core.scheduler.Scheduler;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -120,5 +121,11 @@ public class TransactionUtil {
             log.error("Error mapping CSVRecord to Transaction", e);
             return Mono.error(e);
         }
+    }
+
+    static String buildTransactionIdentifier(Transaction transaction) {
+        return transaction.getDescription() + "|"
+            + transaction.getAmount().setScale(2, RoundingMode.UNNECESSARY) + "|"
+            + transaction.getDate().toString();
     }
 }

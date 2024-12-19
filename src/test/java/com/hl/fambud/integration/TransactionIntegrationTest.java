@@ -131,21 +131,24 @@ public class TransactionIntegrationTest {
     public void importTransactionsCsv() throws Exception {
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
         bodyBuilder.part("file", new ClassPathResource("standard-format-transactions-10.csv"))
-            .contentType(MediaType.APPLICATION_OCTET_STREAM);
+            .header("Content-Disposition", "form-data; name=file; filename=standard-format-transactions-10.csv")
+            .contentType(MediaType.TEXT_PLAIN); // Change to the content type of your CSV file
+
         webTestClient.post()
             .uri("/api/transactions/import/999")
             .contentType(MediaType.MULTIPART_FORM_DATA)
-            .bodyValue(BodyInserters.fromMultipartData(bodyBuilder.build()))
+            .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
             .exchange()
             .expectStatus()
-            .isEqualTo(202)
+            .isAccepted()
             .expectBody(String.class)
             .consumeWith(response -> {
                 String importJobId = response.getResponseBody();
                 assertNotNull(importJobId);
                 System.out.println("Import Job ID: " + importJobId);
             });
-        StepVerifier.create(transactionRepository.findByTransactorId(999L).collectList())
+
+        StepVerifier.create(transactionRepository.findByBudgetId(999L).collectList())
             .assertNext(transactions -> {
                 assertEquals(9, transactions.size());
                 assertEquals(7, transactions.stream()
@@ -157,6 +160,6 @@ public class TransactionIntegrationTest {
                 );
             })
             .verifyComplete();
-        transactionRepository.deleteByTransactorId(999L);
     }
+
 }

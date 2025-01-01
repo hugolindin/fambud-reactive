@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static com.hl.fambud.util.BudgetUtil.INVALID_BUDGET_ID;
 import static com.hl.fambud.util.BudgetUtil.INVALID_TRANSACTION_ID;
 
 @RestController
@@ -83,6 +84,10 @@ public class TransactionController {
     @PutMapping("/categories")
     public Mono<ResponseEntity<Void>> updateTransactionCategories(@PathVariable Long budgetId) {
         log.debug("Updating categories for transactions under budgetId: {}", budgetId);
+        if (budgetId == null || budgetId <= 0) {
+            log.error("invalid budget id " + budgetId);
+            throw new InvalidPathVariableException(INVALID_BUDGET_ID + budgetId);
+        }
         return transactionCategoriser.categorise(budgetId)
             .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)))
             .onErrorResume(e -> {

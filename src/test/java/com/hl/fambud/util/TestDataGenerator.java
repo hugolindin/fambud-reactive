@@ -25,6 +25,7 @@ public class TestDataGenerator {
     public final static String CATEGORY_ID_URL = CATEGORY_BASE_URL + "/{categoryId}";
     public final static String TRANSACTION_BASE_URL = BUDGET_ID_URL + "/transactions";
     public final static String TRANSACTION_ID_URL = TRANSACTION_BASE_URL + "/{transactionId}";
+    public final static String TRANSACTION_CATEGORIES_URL = TRANSACTION_BASE_URL + "/categories";
     public final static Long TEST_BUDGET_ID = 1L;
     public final static Long TEST_CATEGORY_ID = 1L;
     public final static Long TEST_CATEGORY_ID_2 = 2L;

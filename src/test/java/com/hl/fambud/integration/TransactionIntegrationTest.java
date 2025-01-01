@@ -69,6 +69,25 @@ public class TransactionIntegrationTest {
             .isNotFound();
     }
 
+    @Test
+    public void updateWithInvalidBudgetId() {
+        TransactionDto createdTransactionDto = post(TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
+        assertTransaction(createdTransactionDto);
+        failingPut(-1L, createdTransactionDto);
+        failingPut(null, createdTransactionDto);
+    }
+
+    private void failingPut(Long invalidBudgetId, TransactionDto transactionDto) {
+        webTestClient
+            .put()
+            .uri(TRANSACTION_CATEGORIES_URL, invalidBudgetId, transactionDto.getTransactionId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(transactionDto)
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
+    }
+
     private TransactionDto post(Long budgetId, TransactionDto transactionDto) {
         transactionDto.setTransactionId(null);
         return webTestClient

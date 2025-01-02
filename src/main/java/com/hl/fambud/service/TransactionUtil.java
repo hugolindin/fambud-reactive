@@ -23,6 +23,9 @@ import java.util.List;
 @Slf4j
 public class TransactionUtil {
 
+    public static final List<String> TRANSFER_KEYWORDS = List.of(
+        "TFR", "Transfer", "Credit to Account", "From Netwealth Supera");
+
     static Mono<MultipartFile> convertToMultipartFile(Scheduler parallelScheduler, FilePart filePart) {
         return DataBufferUtils.join(filePart.content())
             .map(dataBuffer -> new MultipartFile() {
@@ -113,14 +116,18 @@ public class TransactionUtil {
                 transaction.setAmount(new BigDecimal(creditAmount));
                 transaction.setType(TransactionType.INCOME);
             }
-            if (transaction.getDescription().contains("TFR"))
-                transaction.setType(TransactionType.MOVE);
+            checkForTransfer(transaction);
 
             return Mono.just(transaction);
         } catch (Exception e) {
             log.error("Error mapping CSVRecord to Transaction", e);
             return Mono.error(e);
         }
+    }
+
+    private static void checkForTransfer(Transaction transaction) {
+        if (TRANSFER_KEYWORDS.stream().anyMatch(keyword -> transaction.getDescription().contains(keyword)))
+            transaction.setType(TransactionType.MOVE);
     }
 
     static String buildTransactionIdentifier(Transaction transaction) {

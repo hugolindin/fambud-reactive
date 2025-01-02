@@ -2,14 +2,17 @@ package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hl.fambud.dto.BudgetDto;
+import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.repository.BudgetRepository;
 import com.hl.fambud.repository.CategoryRepository;
 import com.hl.fambud.repository.TransactionRepository;
 import com.hl.fambud.repository.TransactorRepository;
+import com.hl.fambud.service.CategoryService;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +56,10 @@ public class BudgetIntegrationTest {
     @BeforeEach
     public void init() {
         objectMapper = TestUtil.getObjectMapper();
+        budgetRepository.deleteAll();
+        categoryRepository.deleteAll();
+        transactorRepository.deleteAll();
+        transactionRepository.deleteAll();
     }
 
     @Test
@@ -60,6 +67,12 @@ public class BudgetIntegrationTest {
         BudgetDto createdBudgetDto = TestUtil.postBudget(webTestClient, BudgetDto.builder().name("Budget").build());
         assertNotNull(createdBudgetDto);
         assertNotNull(createdBudgetDto.getBudgetId());
+        List<CategoryDto> categories = createdBudgetDto.getCategories();
+        assertNotNull(categories);
+        assertEquals(22, categories.size());
+        for (CategoryDto categoryDto : categories)
+            Assertions.assertTrue(
+                CategoryService.DEFAULT_CATEGORY_NAMES.contains(categoryDto.getName()));
     }
 
     @Test

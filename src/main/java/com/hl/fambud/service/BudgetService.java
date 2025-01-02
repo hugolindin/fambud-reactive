@@ -37,6 +37,7 @@ public class BudgetService {
     @SneakyThrows
     public Mono<BudgetDto> createBudget(@Valid BudgetDto budgetDto) {
         Budget budget = budgetMapper.toBudget(budgetDto);
+        budget.setCategories(CategoryService.defaultCategoriesForNewBudget());
         log.debug("createBudget " + objectMapper.writeValueAsString(budget));
         return saveBudgetAndNestedObjects(budget);
     }

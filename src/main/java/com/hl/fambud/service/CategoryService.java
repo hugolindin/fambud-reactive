@@ -16,10 +16,18 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryService {
+
+    public static final List<String> DEFAULT_CATEGORY_NAMES = List.of(
+        "Mortgage", "Utilities", "Schooling", "Clothing", "Healthcare", "Insurance", "Fitness", "Car",
+        "Entertainment", "Public Transport", "Groceries", "Dining", "Streaming", "Cleaners", "Hair", "Garden",
+        "Work", "Household", "Lotteries", "Taxi", "Credit Card", "Tax"
+    );
 
     private final CategoryRepository categoryRepository;
     private final BudgetMapper budgetMapper;
@@ -65,5 +73,13 @@ public class CategoryService {
             .switchIfEmpty(Mono.error(new EntityNotFoundException("Category not found with ID " + categoryId)))
             .flatMap(category -> categoryRepository.deleteById(categoryId))
             .then();
+    }
+
+    public static List<Category> defaultCategoriesForNewBudget() {
+        return DEFAULT_CATEGORY_NAMES.stream()
+            .map(name -> Category.builder()
+                .name(name)
+                .build())
+            .toList();
     }
 }

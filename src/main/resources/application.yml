@@ -26,6 +26,11 @@ spring:
     password: rocky
     locations: classpath:db.migration
     baseline-on-migrate: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-gxhmt8ncdtjgt878.au.auth0.com/
 app:
   base-url: /api/budgets
 
@@ -35,5 +40,6 @@ logging:
     org.springframework.dao: INFO
     org.springframework.data: INFO
     org.springframework.r2dbc: INFO
+    org.springframework.security: INFO
     io.r2dbc: INFO
     com.hl.fambud: DEBUG

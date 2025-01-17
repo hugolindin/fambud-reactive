@@ -85,7 +85,7 @@ public class BudgetService {
                     ? Flux.fromIterable(budget.getCategories())
                         .map(category -> {
                             category.setBudgetId(savedBudget.getBudgetId());
-                            log.debug("Prepared category for save: " + category);
+                            log.trace("Prepared category for save: " + category);
                             return category;
                         })
                     : Flux.empty();
@@ -154,9 +154,9 @@ public class BudgetService {
                 List<Category> categories = tuple.getT1();
                 List<Transactor> transactors = tuple.getT2();
                 List<Transaction> transactions = tuple.getT3();
-                log.debug("Categories loaded: " + categories);
-                log.debug("Transactors loaded: " + transactors);
-                log.debug("Transactions loaded: " + transactions);
+                log.trace("Categories loaded: " + categories);
+                log.trace("Transactors loaded: " + transactors);
+                log.trace("Transactions loaded: " + transactions);
                 budget.setCategories(categories);
                 budget.setTransactors(transactors);
                 budget.setTransactions(transactions);

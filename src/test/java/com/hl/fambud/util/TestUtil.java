@@ -14,6 +14,7 @@ public class TestUtil {
         return webTestClient
             .post()
             .uri(TestDataGenerator.BUDGET_BASE_URL)
+            .header("Authorization", "Bearer test-token")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(budgetDto)
             .exchange()

@@ -16,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.test.StepVerifier;
 
@@ -29,10 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @Slf4j
-public class TransactionIntegrationTest {
-
-    @Autowired
-    private WebTestClient webTestClient;
+public class TransactionIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -41,81 +37,33 @@ public class TransactionIntegrationTest {
 
     @BeforeEach
     public void init() {
+        super.init();
         objectMapper = TestUtil.getObjectMapper();
     }
 
     @Test
     public void crud() {
         // create
-        TransactionDto createdTransactionDto = post(TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
+        TransactionDto createdTransactionDto = TestUtil.postTransaction(webTestClient, TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
         assertTransaction(createdTransactionDto);
         // read
-        TransactionDto retrievedTransactionDto = get(TEST_BUDGET_ID, createdTransactionDto.getTransactionId());
+        TransactionDto retrievedTransactionDto = TestUtil.getTransaction(webTestClient, TEST_BUDGET_ID, createdTransactionDto.getTransactionId());
         assertTransaction(retrievedTransactionDto);
         // update
         retrievedTransactionDto.setDescription("Updated Description");
         retrievedTransactionDto.setAmount(BigDecimal.valueOf(100.00));
-        TransactionDto updatedTransactionDto = put(TEST_BUDGET_ID, retrievedTransactionDto);
+        TransactionDto updatedTransactionDto = TestUtil.putTransaction(webTestClient, TEST_BUDGET_ID, retrievedTransactionDto);
         assertEquals("Updated Description", updatedTransactionDto.getDescription());
         assertEquals(0, updatedTransactionDto.getAmount().compareTo(BigDecimal.valueOf(100.00)));
 
         // delete
-        delete(TEST_BUDGET_ID, retrievedTransactionDto);
+        TestUtil.deleteTransaction(webTestClient, TEST_BUDGET_ID, retrievedTransactionDto);
         webTestClient.get()
             .uri(TRANSACTION_ID_URL,
                 TEST_BUDGET_ID, retrievedTransactionDto.getTransactionId())
             .exchange()
             .expectStatus()
             .isNotFound();
-    }
-
-    private TransactionDto post(Long budgetId, TransactionDto transactionDto) {
-        transactionDto.setTransactionId(null);
-        return webTestClient
-            .post()
-            .uri(TRANSACTION_BASE_URL, budgetId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(transactionDto)
-            .exchange()
-            .expectStatus()
-            .isCreated()
-            .expectBody(TransactionDto.class)
-            .returnResult()
-            .getResponseBody();
-    }
-
-    private TransactionDto get(Long budgetId, Long transactionId) {
-        return webTestClient
-            .get()
-            .uri(TRANSACTION_ID_URL, budgetId, transactionId)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectBody(TransactionDto.class)
-            .returnResult()
-            .getResponseBody();
-    }
-
-    private TransactionDto put(Long budgetId, TransactionDto transactionDto) {
-        return webTestClient
-            .put()
-            .uri(TRANSACTION_ID_URL, budgetId, transactionDto.getTransactionId())
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(transactionDto)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectBody(TransactionDto.class)
-            .returnResult()
-            .getResponseBody();
-    }
-
-    private void delete(Long budgetId, TransactionDto transactionDto) {
-        webTestClient.delete()
-            .uri(TRANSACTION_ID_URL, budgetId, transactionDto.getTransactionId())
-            .exchange()
-            .expectStatus()
-            .isNoContent();
     }
 
     private void assertTransaction(TransactionDto transactionDto) {
@@ -164,7 +112,7 @@ public class TransactionIntegrationTest {
 
     @Test
     public void updateWithInvalidBudgetId() {
-        TransactionDto createdTransactionDto = post(TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
+        TransactionDto createdTransactionDto = TestUtil.postTransaction(webTestClient, TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
         assertTransaction(createdTransactionDto);
         failingPut(-1L, createdTransactionDto);
         failingPut(null, createdTransactionDto);

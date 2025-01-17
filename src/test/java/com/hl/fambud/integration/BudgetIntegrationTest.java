@@ -1,7 +1,6 @@
 package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hl.fambud.configuration.SecurityTestConfig;
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.repository.BudgetRepository;
@@ -19,10 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,12 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
-@Import(SecurityTestConfig.class)
 @Slf4j
-public class BudgetIntegrationTest {
-
-    @Autowired
-    private WebTestClient webTestClient;
+public class BudgetIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private BudgetRepository budgetRepository;
@@ -58,9 +51,7 @@ public class BudgetIntegrationTest {
 
     @BeforeEach
     public void init() {
-        webTestClient = webTestClient.mutate()
-            .defaultHeader("Authorization", "Bearer test-token")
-            .build();
+        super.init();
         objectMapper = TestUtil.getObjectMapper();
         budgetRepository.deleteAll();
         categoryRepository.deleteAll();

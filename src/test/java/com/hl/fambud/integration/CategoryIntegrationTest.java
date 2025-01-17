@@ -7,11 +7,9 @@ import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static com.hl.fambud.util.TestDataGenerator.TEST_BUDGET_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,15 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @Slf4j
-public class CategoryIntegrationTest {
-
-    @Autowired
-    private WebTestClient webTestClient;
+public class CategoryIntegrationTest extends BaseIntegrationTest {
 
     private ObjectMapper objectMapper;
 
     @BeforeEach
     public void init() {
+        super.init();
         objectMapper = TestUtil.getObjectMapper();
     }
 

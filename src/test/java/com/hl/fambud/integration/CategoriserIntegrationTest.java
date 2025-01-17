@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -38,10 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @Slf4j
-public class CategoriserIntegrationTest {
-
-    @Autowired
-    private WebTestClient webTestClient;
+public class CategoriserIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private BudgetRepository budgetRepository;
@@ -59,6 +55,7 @@ public class CategoriserIntegrationTest {
 
     @BeforeEach
     public void init() {
+        super.init();
         objectMapper = TestUtil.getObjectMapper();
     }
 

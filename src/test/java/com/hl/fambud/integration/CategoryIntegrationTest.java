@@ -1,17 +1,15 @@
 package com.hl.fambud.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
-import static com.hl.fambud.util.TestDataGenerator.TEST_BUDGET_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -20,31 +18,25 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Slf4j
 public class CategoryIntegrationTest extends BaseIntegrationTest {
 
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    public void init() {
-        super.init();
-        objectMapper = TestUtil.getObjectMapper();
-    }
-
     @Test
     public void crud() {
         // create
+        BudgetDto budgetDto = TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto());
+        long budgetId = budgetDto.getBudgetId();
         CategoryDto createdCategoryDto = TestUtil.postCategory(
-            webTestClient, TEST_BUDGET_ID, TestDataGenerator.getCategoryDto());
-        assertCategory(TEST_BUDGET_ID, createdCategoryDto);
+            webTestClient, budgetId, TestDataGenerator.getCategoryDto(budgetId));
+        assertCategory(budgetId, createdCategoryDto);
         // read
-        CategoryDto retrievedCategoryDto = get(TEST_BUDGET_ID, createdCategoryDto.getCategoryId());
-        assertCategory(TEST_BUDGET_ID, retrievedCategoryDto);
+        CategoryDto retrievedCategoryDto = get(budgetId, createdCategoryDto.getCategoryId());
+        assertCategory(budgetId, retrievedCategoryDto);
         // update
         retrievedCategoryDto.setName("Updated Insurance");
-        CategoryDto updatedCategoryDto = put(TEST_BUDGET_ID, retrievedCategoryDto);
+        CategoryDto updatedCategoryDto = put(budgetId, retrievedCategoryDto);
         assertEquals("Updated Insurance", updatedCategoryDto.getName());
         // delete
-        delete(TEST_BUDGET_ID, retrievedCategoryDto);
+        delete(budgetId, retrievedCategoryDto);
         webTestClient.get()
-            .uri(TestDataGenerator.CATEGORY_ID_URL, TEST_BUDGET_ID, retrievedCategoryDto.getCategoryId())
+            .uri(TestDataGenerator.CATEGORY_ID_URL, budgetId, retrievedCategoryDto.getCategoryId())
             .exchange()
             .expectStatus()
             .isNotFound();

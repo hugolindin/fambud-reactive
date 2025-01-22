@@ -1,13 +1,11 @@
 package com.hl.fambud.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hl.fambud.dto.TransactionDto;
 import com.hl.fambud.model.TransactionType;
 import com.hl.fambud.repository.TransactionRepository;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,8 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 
-import static com.hl.fambud.util.TestDataGenerator.*;
+import static com.hl.fambud.util.TestDataGenerator.TRANSACTION_CATEGORIES_URL;
+import static com.hl.fambud.util.TestDataGenerator.TRANSACTION_ID_URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -33,34 +32,31 @@ public class TransactionIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    public void init() {
-        super.init();
-        objectMapper = TestUtil.getObjectMapper();
-    }
-
     @Test
     public void crud() {
         // create
-        TransactionDto createdTransactionDto = TestUtil.postTransaction(webTestClient, TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
+        long budgetId = TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto()).getBudgetId();
+        long categoryId = TestUtil.postCategory(
+            webTestClient, budgetId, TestDataGenerator.getCategoryDto(budgetId)).getCategoryId();
+        TransactionDto createdTransactionDto =
+            TestUtil.postTransaction(webTestClient, budgetId, TestDataGenerator.getTransactionDto(budgetId, categoryId));
         assertTransaction(createdTransactionDto);
         // read
-        TransactionDto retrievedTransactionDto = TestUtil.getTransaction(webTestClient, TEST_BUDGET_ID, createdTransactionDto.getTransactionId());
+        TransactionDto retrievedTransactionDto =
+            TestUtil.getTransaction(webTestClient, budgetId, createdTransactionDto.getTransactionId());
         assertTransaction(retrievedTransactionDto);
         // update
         retrievedTransactionDto.setDescription("Updated Description");
         retrievedTransactionDto.setAmount(BigDecimal.valueOf(100.00));
-        TransactionDto updatedTransactionDto = TestUtil.putTransaction(webTestClient, TEST_BUDGET_ID, retrievedTransactionDto);
+        TransactionDto updatedTransactionDto =
+            TestUtil.putTransaction(webTestClient, budgetId, retrievedTransactionDto);
         assertEquals("Updated Description", updatedTransactionDto.getDescription());
         assertEquals(0, updatedTransactionDto.getAmount().compareTo(BigDecimal.valueOf(100.00)));
-
         // delete
-        TestUtil.deleteTransaction(webTestClient, TEST_BUDGET_ID, retrievedTransactionDto);
+        TestUtil.deleteTransaction(webTestClient, budgetId, retrievedTransactionDto);
         webTestClient.get()
             .uri(TRANSACTION_ID_URL,
-                TEST_BUDGET_ID, retrievedTransactionDto.getTransactionId())
+                budgetId, retrievedTransactionDto.getTransactionId())
             .exchange()
             .expectStatus()
             .isNotFound();
@@ -68,7 +64,6 @@ public class TransactionIntegrationTest extends BaseIntegrationTest {
 
     private void assertTransaction(TransactionDto transactionDto) {
         assertNotNull(transactionDto.getTransactionId());
-        assertNotNull(transactionDto.getTransactorId());
         assertNotNull(transactionDto.getBudgetId());
         assertEquals("Initial Description", transactionDto.getDescription());
         assertEquals(TransactionType.EXPENSE, transactionDto.getType());
@@ -112,7 +107,11 @@ public class TransactionIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void updateWithInvalidBudgetId() {
-        TransactionDto createdTransactionDto = TestUtil.postTransaction(webTestClient, TEST_BUDGET_ID, TestDataGenerator.getTransactionDto());
+        long budgetId = TestUtil.postBudget(webTestClient, TestDataGenerator.getBudgetDto()).getBudgetId();
+        long categoryId = TestUtil.postCategory(
+            webTestClient, budgetId, TestDataGenerator.getCategoryDto(budgetId)).getCategoryId();
+        TransactionDto createdTransactionDto = TestUtil.postTransaction(
+            webTestClient, budgetId, TestDataGenerator.getTransactionDto(budgetId, categoryId));
         assertTransaction(createdTransactionDto);
         failingPut(-1L, createdTransactionDto);
         failingPut(null, createdTransactionDto);

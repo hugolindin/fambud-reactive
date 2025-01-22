@@ -2,7 +2,6 @@ package com.hl.fambud.integration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hl.fambud.dto.BudgetDto;
 import com.hl.fambud.dto.CategoryDto;
 import com.hl.fambud.dto.TransactionDto;
@@ -19,7 +18,6 @@ import com.hl.fambud.service.TransactionCategoriser;
 import com.hl.fambud.util.TestDataGenerator;
 import com.hl.fambud.util.TestUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,14 +48,6 @@ public class CategoriserIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private TransactionCategoriser categoriser;
-
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    public void init() {
-        super.init();
-        objectMapper = TestUtil.getObjectMapper();
-    }
 
     @Test
     @Disabled

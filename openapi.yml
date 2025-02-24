@@ -1,0 +1,317 @@
+openapi: 3.0.3
+info:
+  title: Family Budget API
+  description: REST API for managing household budgets, categories, transactions, and financial summaries.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local Development Server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Budget:
+      type: object
+      properties:
+        budgetId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Monthly Household Budget"
+
+    Category:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          format: int64
+          example: 1
+        budgetId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Groceries"
+
+    Transaction:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          example: 101
+        budgetId:
+          type: integer
+          format: int64
+          example: 1
+        categoryId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 1
+        description:
+          type: string
+          example: "Supermarket Shopping"
+        amount:
+          type: number
+          format: double
+          example: 150.00
+        date:
+          type: string
+          format: date
+          example: "2025-01-17"
+        type:
+          type: string
+          enum: [EXPENSE, INCOME, MOVE]
+          example: "EXPENSE"
+
+    PeriodSummary:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          example: "2024-01-01"
+        endDate:
+          type: string
+          format: date
+          example: "2024-12-31"
+        totalExpenses:
+          type: number
+          format: double
+          example: 500.00
+        totalIncome:
+          type: number
+          format: double
+          example: 1000.00
+        surplus:
+          type: number
+          format: double
+          example: 500.00
+        expenseCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategorySummary"
+        incomeCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategorySummary"
+
+    CategorySummary:
+      type: object
+      properties:
+        categoryName:
+          type: string
+          example: "Groceries"
+        amount:
+          type: number
+          format: double
+          example: 150.00
+
+paths:
+  /budgets:
+    get:
+      summary: Get all budgets
+      operationId: getBudgets
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of budgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Budget"
+
+    post:
+      summary: Create a new budget
+      operationId: createBudget
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Budget"
+      responses:
+        "201":
+          description: Budget created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+
+  /budgets/{budgetId}:
+    get:
+      summary: Get budget details
+      operationId: getBudget
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Budget details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "404":
+          description: Budget not found
+
+    delete:
+      summary: Delete a budget
+      operationId: deleteBudget
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Budget deleted successfully
+        "404":
+          description: Budget not found
+
+  /budgets/{budgetId}/categories:
+    get:
+      summary: Get all categories for a budget
+      operationId: getCategories
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+    post:
+      summary: Add a category to a budget
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Category"
+      responses:
+        "201":
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /budgets/{budgetId}/summaries:
+    get:
+      summary: Get budget period summary
+      operationId: getBudgetSummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Budget summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeriodSummary"
+        "400":
+          description: Invalid input
+        "404":
+          description: Budget not found
+
+  /transactions/import/{budgetId}:
+    post:
+      summary: Import transactions from a CSV file
+      operationId: importTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "202":
+          description: Import started successfully
+        "400":
+          description: Invalid file format
+

@@ -5,14 +5,14 @@ spring:
   application:
     name: fambud
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/fambud
+    url: r2dbc:postgresql://host.docker.internal:5432/fambud
     username: fambud
     password: fambud
     properties:
       logging.level: DEBUG
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/fambud
+    url: jdbc:postgresql://host.docker.internal:5432/fambud
     username: fambud
     password: fambud
   data:
@@ -21,7 +21,7 @@ spring:
         generate: true
   flyway:
     enabled: true
-    url: jdbc:postgresql://localhost:5432/fambud
+    url: jdbc:postgresql://host.docker.internal:5432/fambud
     user: postgres
     password: rocky
     locations: classpath:db.migration
@@ -40,6 +40,6 @@ logging:
     org.springframework.dao: INFO
     org.springframework.data: INFO
     org.springframework.r2dbc: INFO
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
     io.r2dbc: INFO
     com.hl.fambud: DEBUG

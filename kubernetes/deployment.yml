@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fambud-reactive
+  labels:
+    app: fambud-reactive
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fambud-reactive
+  template:
+    metadata:
+      labels:
+        app: fambud-reactive
+    spec:
+      containers:
+        - name: fambud-reactive
+          image: hugolindin/fambud-reactive:latest # Replace with your Docker Hub username and image
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://<your-host-ip>:5432/your_database
+            - name: SPRING_DATASOURCE_USERNAME
+              value: your_user
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: your_password
